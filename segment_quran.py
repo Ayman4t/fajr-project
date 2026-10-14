@@ -33,11 +33,17 @@ TEXT_HAFS = [
     "صِرَٰطَ ٱلَّذِينَ أَنۡعَمۡتَ عَلَيۡهِمۡ غَيۡرِ ٱلۡمَغۡضُوبِ عَلَيۡهِمۡ وَلَا ٱلضَّآلِّينَ",
 ]
 
+# Qalun / Warsh ('an Nafi') and Al-Duri ('an Abi 'Amr) read مَلِكِ in ayah 4 (Hafs reads مَٰلِكِ).
+TEXT_OTHERS = TEXT_HAFS[:3] + ["مَلِكِ يَوۡمِ ٱلدِّينِ"] + TEXT_HAFS[4:]
+
 # id, source file name, riwaya key (qalun | hafs | warsh | duri), reciter, texts, [tuning options]
+# In these recordings: Hafs / Qalun / Warsh begin with a spoken isti'adha (dropped with "skip_start");
+# Qalun / Warsh / Al-Duri pause after "أنعمت عليهم", so the last two blocks are joined into ayah 7 ("merge").
 RECORDINGS = [
-    # Filled in once the four real recitation recordings are available, for example:
-    # ("hafs", "hafs.mp3", "hafs", RECITER, TEXT_HAFS),
-    # ("warsh", "warsh.mp3", "warsh", RECITER, TEXT_WARSH, {"bridge": 0.5}),
+    ("qalun", "qalun.mp3", "qalun", RECITER, TEXT_OTHERS, {"skip_start": 7.0, "merge": [[6, 7]]}),
+    ("hafs", "hafs.mp3", "hafs", RECITER, TEXT_HAFS, {"skip_start": 5.5}),
+    ("warsh", "warsh.mp3", "warsh", RECITER, TEXT_OTHERS, {"skip_start": 6.5, "merge": [[6, 7]]}),
+    ("duri", "duri.mp3", "duri", RECITER, TEXT_OTHERS, {"merge": [[6, 7]]}),
 ]
 
 

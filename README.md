@@ -5,8 +5,9 @@ Two features in one site:
 * **Adhan** (`#/studio`): eight maqams, one recording each, 14 phrases per adhan.
 * **Quran** (`#/quran`): Surat Al-Fatiha in four riwayat (Qalun 'an Nafi', Hafs 'an 'Asim, Warsh 'an Nafi', Al-Duri 'an Abi 'Amr al-Basri), 7 ayat per recording.
 
-The Quran recordings are not added yet (`data/quran.json` is empty, so the four riwaya cards show "no recording yet").
-To add them, see "Adding the Quran recordings" below.
+Quran recordings (all by Al-Husary, from mp3quran.net): `qalun`, `hafs`, `warsh`, `duri`, each cut into 7 ayat
+(basmala = ayah 1, ayah 7 = "صراط الذين ... ولا الضالين"). Source names expected by `segment_quran.py`:
+qalun.mp3, hafs.mp3, warsh.mp3, duri.mp3.
 
 The site name is in `index.html` (title tag and the `<nav>` line).
 
@@ -44,7 +45,7 @@ Recordings whose source mp3 is not in that folder are kept as they are in data/r
 without the old sources. Expected source names for the new four: nahawand.mp3, sikah.mp3, ajam.mp3, kurd.mp3.
 Per-recording tuning options (pause bridging, manual split/merge of phrases, tonic override) are documented at the top of segment.py.
 
-## Adding the Quran recordings
+## Adding or replacing Quran recordings
 
 1. Put the four recitation files in one folder, for example `hafs.mp3`, `warsh.mp3`, `qalun.mp3`, `duri.mp3`.
 2. In `segment_quran.py` fill in `RECORDINGS` (id, file name, riwaya key `qalun | hafs | warsh | duri`, reciter, the 7 texts).
