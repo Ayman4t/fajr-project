@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>صوت الفجر — تدريب أذان الفجر بالمقامات</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+<title>صدى — تعلّم الأذان والقرآن بالمحاكاة</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root{color-scheme:dark;--bg:#0B0F19;--bg2:#111827;--cy:#38BDF8;--go:#F59E0B;--tx:#E5E7EB;--mu:#94A3B8;--gl:rgba(255,255,255,.06);--bd:rgba(255,255,255,.13);--ok:#22C55E;--lo:#EF4444;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{margin:0;font-family:Cairo,"Segoe UI",Tahoma,sans-serif;color:var(--tx);min-height:100vh;background:radial-gradient(1100px 560px at 85% -10%,rgba(56,189,248,.2),transparent),radial-gradient(800px 480px at 5% 5%,rgba(245,158,11,.13),transparent),#0B0F19}
 .wrap{max-width:1040px;margin:0 auto;padding:0 18px 60px}
-nav{display:flex;justify-content:space-between;align-items:center;padding:16px 0;gap:10px}
+nav{display:flex;justify-content:space-between;align-items:center;padding:16px 0;gap:10px;flex-wrap:wrap}
 nav b{font-size:1.25rem;font-weight:800}nav b span{color:var(--go)}
 nav a{color:var(--mu);text-decoration:none;margin-inline-start:16px;font-weight:600}nav a.on{color:var(--cy)}
 .glass{background:var(--gl);border:1px solid var(--bd);border-radius:20px;backdrop-filter:blur(14px);padding:20px}
@@ -50,6 +50,12 @@ canvas{width:100%;height:260px;display:block;background:rgba(0,0,0,.28);border-r
 .steps-line{font-size:.82rem;color:var(--cy);direction:ltr;text-align:right;letter-spacing:.02em}
 footer{margin-top:60px;padding:26px 0 8px;border-top:1px solid var(--bd);text-align:center;color:var(--mu)}
 footer b{color:var(--go);font-weight:800;letter-spacing:.02em}
+.feat{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin-top:26px}
+.feat .glass{display:flex;flex-direction:column;gap:8px}.feat .ic{font-size:2rem}
+.band{font-size:2rem;margin:64px 0 0;padding-top:18px;border-top:1px solid var(--bd);color:var(--go)}
+.ayah{font-family:"Amiri Quran",Cairo,serif;font-size:clamp(1.5rem,4.2vw,2.4rem);line-height:2.2;text-align:center;margin:4px 0 8px;color:var(--tx)}
+.segs.ayat{grid-template-columns:1fr}.segs.ayat .seg span{font-family:"Amiri Quran",Cairo,serif;font-size:1.25rem;line-height:2}
+.warn{border-inline-start:3px solid var(--go);padding:10px 14px;background:rgba(245,158,11,.08);border-radius:10px;color:var(--mu);margin:18px 0;line-height:1.9}
 .lib{display:grid;gap:10px}
 .lib .it{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:12px 16px;background:var(--gl);border:1px solid var(--bd);border-radius:14px}
 @media(max-width:560px){.lib .it{grid-template-columns:1fr auto}.lib .it .btn{grid-column:1/-1}}
@@ -57,7 +63,7 @@ footer b{color:var(--go);font-weight:800;letter-spacing:.02em}
 </head>
 <body>
 <div class="wrap">
-<nav><b>صوت <span>الفجر</span></b><div><a href="#/" id="n1">الرئيسية</a><a href="#/studio" id="n2">منطقة التدريب</a></div></nav>
+<nav><b>صدى <span>الأذان والقرآن</span></b><div><a href="#/" id="n1">الرئيسية</a><a href="#/studio" id="n2">تعلّم الأذان</a><a href="#/quran" id="n3">تعلّم القرآن</a></div></nav>
 <main id="app"></main>
 <footer>صُنع بواسطة <b>aymanstack</b></footer>
 </div>
@@ -82,7 +88,12 @@ nahawand:["يشبه السلم الصغير في الموسيقى الغربية
 sikah:["يبدأ من نغمة السيكا ذات الثلث على ربع تون، وطابعه صافٍ هادئ تتسع فيه المدّات والانتقالات.","الأذان والتلاوة"],
 ajam:["يشبه السلم الكبير في الموسيقى الغربية، وطابعه مشرق صافٍ يوحي بالأمل والبهجة.","الأذان والابتهالات المشرقة"],
 kurd:["يشبه النمط الفريجي، فبعد القرار نصف تون ثم ثلث صغير. طابعه صادق عميق وحزنه هادئ بلا تكلّف.","الأذان والأناشيد الهادئة"]};
-let REC=[];
+const RW={
+qalun:{n:"قالون عن نافع",im:"الإمام نافع المدني",d:"إحدى روايتَي الإمام نافع المدني، رواها قالون (عيسى بن مينا).",z:"تنتشر قراءةً في ليبيا وأجزاء من تونس والجزائر."},
+hafs:{n:"حفص عن عاصم",im:"الإمام عاصم الكوفي",d:"رواية حفص بن سليمان عن الإمام عاصم بن أبي النَّجود الكوفي، وعليها أغلب المصاحف المطبوعة اليوم.",z:"أكثر الروايات انتشاراً في العالم الإسلامي."},
+warsh:{n:"ورش عن نافع",im:"الإمام نافع المدني",d:"الرواية الثانية عن الإمام نافع المدني، رواها ورش (عثمان بن سعيد المصري).",z:"تنتشر في المغرب والجزائر وتونس وموريتانيا وغرب إفريقيا."},
+duri:{n:"الدوري عن أبي عمرو البصري",im:"الإمام أبو عمرو البصري",d:"رواية حفص بن عمر الدوري عن الإمام أبي عمرو بن العلاء البصري.",z:"تنتشر في السودان وأجزاء من غرب إفريقيا."}};
+let REC=[],QREC=[],lastPage=null;
 const S={m:null,r:null,i:null,rel:true};
 let rec=null,pts=[],AC,cur,au;
 
@@ -97,6 +108,7 @@ l.connect(lg);lg.connect(o.frequency);o.connect(f);f.connect(g);g.connect(c.dest
 ns.forEach((n,i)=>{const fr=hzOf(m,n.d,tn);i?o.frequency.setTargetAtTime(fr,t0+n.t,.04):o.frequency.setValueAtTime(fr,t0)});
 g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(.2,t0+.08);g.gain.setValueAtTime(.2,t0+T-.15);g.gain.linearRampToValueAtTime(0,t0+T);
 o.start(t0);l.start(t0);o.stop(t0+T+.05);l.stop(t0+T+.05);cur=o}
+function qsample(k){const r=QREC.find(x=>x.rw==k);if(!r)return;stopA();const a=au=new Audio(r.segs[0].a);a.play();setTimeout(()=>{if(au===a)a.pause()},7000)}
 function sample(k){const rr=REC.find(x=>x.mq==k);if(rr){stopA();const a=au=new Audio(rr.segs[0].a);a.currentTime=.1;a.play();setTimeout(()=>a.pause(),5000);return}const ns=[0,1,2,3,4,3,2,1,0].map((d,i)=>({d,t:i*.55,L:.55}));play(ns,146.83,k)}
 
 /* ---------- كشف الطبقة (YIN) ---------- */
@@ -116,31 +128,50 @@ const bars=Array.from({length:26},(_,i)=>`<i style="animation-delay:${(i*.11).to
 const mq=Object.entries(MQ).map(([k,v])=>{const r=REC.find(x=>x.mq==k);return `<div class="glass"><h3>${v.n}</h3><p>${v.d} — الأنسب لأجواء السَّحر.</p>${r?`<p class="note">المؤذن: ${r.n}</p>`:""}<div class="row"><button class="btn" onclick="sample('${k}')">▶ عينة 5 ثوانٍ</button>${r?`<button class="btn" onclick="goStudio('${k}','${r.id}')">تدرّب ←</button>`:""}</div></div>`}).join("");
 const known=r=>r.mq&&MQ[r.mq],order=k=>known({mq:k})?Object.keys(MQ).indexOf(k):99;
 const lib=[...REC].sort((a,b)=>order(a.mq)-order(b.mq)).map(r=>`<div class="it"><div><b>${r.n}</b><div class="note">${r.t}</div></div><span class="tag">${known(r)?"مقام "+MQ[r.mq].n:"غير محدد"}</span><button class="btn" onclick="goStudio('${known(r)?r.mq:"?"}','${r.id}')">تدرّب ←</button></div>`).join("");
-return `<section class="hero"><h1>صوت الفجر: أتقن نداء الصلاة بأعذب المقامات</h1>
-<p style="max-width:620px">تدرّب على أذان الفجر جملةً جملة، وشاهد طبقة صوتك وهي تُقارَن بالمقام لحظةً بلحظة، لتضبط الركوز والانتقالات وتتقن النداء.</p>
-<div class="bars" aria-hidden="true">${bars}</div><a class="cta" href="#/studio">انتقل لمنطقة التدريب</a></section>
+const qcards=Object.entries(RW).map(([k,v])=>{const r=QREC.find(x=>x.rw==k);return `<div class="glass"><h3>${v.n}</h3><p>${v.d}</p><p class="note">${v.z}</p>${r?`<p class="note">القارئ: ${r.n}</p><div class="row"><button class="btn" onclick="qsample('${k}')">▶ استمع للآية الأولى</button><button class="btn" onclick="goStudio('${k}','${r.id}','q')">تدرّب ←</button></div>`:`<p class="note">لا يوجد تسجيل بعد</p>`}</div>`}).join("");
+const qlib=QREC.length?`<div class="lib">${QREC.map(r=>`<div class="it"><div><b>${r.n}</b><div class="note">${r.t}</div></div><span class="tag">${RW[r.rw]?RW[r.rw].n:r.rw}</span><button class="btn" onclick="goStudio('${r.rw}','${r.id}','q')">تدرّب ←</button></div>`).join("")}</div>`:`<p class="note">تسجيلات التلاوة قيد الإضافة، وستظهر هنا بمجرد إضافتها.</p>`;
+return `<section class="hero"><h1>صدى: تعلّم الأذان والقرآن بالمحاكاة</h1>
+<p style="max-width:660px">استمع إلى مؤذن أو قارئ متقن، ثم أعد ما سمعتَه بصوتك وشاهد طبقة صوتك وهي تُقارَن بصوته لحظةً بلحظة. مسارٌ لتعلّم الأذان بالمقامات، ومسارٌ لتلاوة سورة الفاتحة بأربع روايات.</p>
+<div class="bars" aria-hidden="true">${bars}</div>
+<div class="row"><a class="cta" href="#/studio">ابدأ بالأذان</a><a class="cta" href="#/quran" style="background:linear-gradient(135deg,var(--go),#D97706);box-shadow:0 0 28px rgba(245,158,11,.5)">ابدأ بالقرآن</a></div></section>
+<div class="feat">
+<div class="glass"><div class="ic">🕌</div><h3>تعلّم الأذان</h3><p>ثمانية مقامات بتسجيل حقيقي لكل مقام، والأذان مقسَّم إلى 14 شريحة تتدرّب عليها شريحةً شريحة.</p><div class="row"><a class="btn" href="#/studio" style="text-decoration:none">ادخل تعلّم الأذان ←</a></div></div>
+<div class="glass"><div class="ic">📖</div><h3>تعلّم القرآن</h3><p>سورة الفاتحة بتلاوة الشيخ الحصري في أربع روايات: قالون وحفص وورش والدوري، تتدرّب عليها آيةً آية.</p><div class="row"><a class="btn" href="#/quran" style="text-decoration:none">ادخل تعلّم القرآن ←</a></div></div></div>
+
+<h2 class="band">🕌 تعلّم الأذان</h2>
 <h2>ما يميّز أذان الفجر</h2><div class="g">
 <div class="glass"><h3>«الصلاة خير من النوم»</h3><p>جملة يختص بها أذان الفجر، تُؤدّى مرتين بنبرة تُوقظ القلب قبل الجسد.</p></div>
 <div class="glass"><h3>سكون الوقت</h3><p>يُرفع الأذان في هدوء الصباح الباكر، فيناسبه صوت صافٍ متّزن بلا تكلّف.</p></div>
 <div class="glass"><h3>وقار وخشوع</h3><p>المدّ والانتقال بين الدرجات هما ما يمنح النداء هيبته، وهذا ما ستدرّب أذنك وصوتك عليه.</p></div></div>
 <h2>المقامات الأنسب للفجر</h2><div class="g">${mq}</div>
-<h2>تصنيف التسجيلات</h2><p>كل تسجيل مصنَّف باسم المؤذن والمقام الذي يُؤدّى به.</p><div class="lib">${lib}</div>
-<h2>كيف يعمل النظام؟</h2><div class="steps">
+<h2>تصنيف تسجيلات الأذان</h2><p>كل تسجيل مصنَّف باسم المؤذن والمقام الذي يُؤدّى به.</p><div class="lib">${lib}</div>
+<h2>تعرّف على المقامات</h2><p>نبذة عن كل مقام، مع درجاته بالسنت فوق القرار (100 سنت = نصف تون).</p>
+<div class="g info">${Object.entries(MQ).map(([k,v])=>{const r=REC.find(x=>x.mq==k);return `<div class="glass"><div class="hd"><h3>${v.n}</h3><span class="tag">${v.d}</span></div><p>${INFO[k][0]}</p><p class="note">الأنسب: ${INFO[k][1]}</p><div class="steps-line">${v.c.join(" · ")}</div>${r?`<p class="note">تسجيل المقام: ${r.n}</p>`:""}</div>`}).join("")}</div>
+<h2>كيف يعمل تعلّم الأذان؟</h2><div class="steps">
 <div class="glass"><h3>اختر المقام والمؤذن</h3><p>حدّد المقام ثم التسجيل الذي تريد التدريب عليه.</p></div><em>←</em>
 <div class="glass"><h3>تدرّب شريحة بشريحة</h3><p>الأذان مقسّم إلى 14 شريحة، استمع لكل منها ثم أعدها بصوتك.</p></div><em>←</em>
 <div class="glass"><h3>تلقَّ تصحيحاً لحظياً</h3><p>تعرف فوراً هل صوتك أعلى أو أخفض أو على النغمة تماماً.</p></div></div>
+
+<h2 class="band">📖 تعلّم القرآن</h2>
+<p>سورة الفاتحة بتلاوة الشيخ محمود خليل الحصري، رحمه الله، في أربع روايات. تتدرّب على كل آية على حدة، وتقارن لحنك وإيقاعك بالقارئ.</p>
+<h2>الروايات الأربع</h2><div class="g">${qcards}</div>
+<h2>تصنيف تسجيلات القرآن</h2><p>كل تسجيل مصنَّف باسم القارئ والرواية.</p>${qlib}
+<h2>كيف يعمل تعلّم القرآن؟</h2><div class="steps">
+<div class="glass"><h3>اختر الرواية والقارئ</h3><p>قالون أو حفص أو ورش أو الدوري، ثم التسجيل الذي تريده.</p></div><em>←</em>
+<div class="glass"><h3>تدرّب آيةً آية</h3><p>السورة مقسّمة إلى 7 آيات، استمع لكل آية ثم أعدها بصوتك.</p></div><em>←</em>
+<div class="glass"><h3>قارن لحنك وإيقاعك</h3><p>ترى خط صوتك فوق خط القارئ وتحصل على نسبة المطابقة.</p></div></div>
+<div class="warn"><b>تنبيه:</b> يقارن الموقع طبقة الصوت وإيقاعه فقط، ولا يُصحّح أحكام التجويد ولا مخارج الحروف. هو معينٌ لك على التدرّب وليس بديلاً عن التلقّي من شيخ مُجاز.</div>
+
 <h2>لماذا هذا الموقع مهمّ؟</h2><div class="why">
-<div class="glass"><b>صون هذا الفن</b><p>الأذان نداءٌ يومي تتوارثه الأجيال، وتعلّم أدائه بالمقام الصحيح يحفظ جمال هذا التراث ويُبقيه حياً.</p></div>
-<div class="glass"><b>تعلّم بالأذن والتجربة</b><p>تستمع إلى مؤذنين متقنين ثم تُعيد الجملة بصوتك، فتتدرّب أذنك وصوتك معاً بدل الاكتفاء بالقراءة النظرية.</p></div>
-<div class="glass"><b>تصحيح فوري</b><p>يرسم الموقع طبقة صوتك فوق المقام لحظةً بلحظة، فترى أين زدت وأين نزلت وأين ثبتّ على النغمة.</p></div>
-<div class="glass"><b>ثمانية مقامات</b><p>تعرّف على الفروق بين البياتي والصبا والرست والحجاز والنهاوند والسيكا والعجم والكرد من تسجيل حقيقي لكل مقام.</p></div>
+<div class="glass"><b>صون هذا التراث</b><p>الأذان والتلاوة نداءان تتوارثهما الأجيال بالسماع، وتعلّم أدائهما كما نطق به أهل الإتقان يُبقيهما حيَّين.</p></div>
+<div class="glass"><b>تعلّم بالأذن والتجربة</b><p>تستمع إلى مؤذن أو قارئ متقن ثم تُعيد ما سمعتَه بصوتك، فتتدرّب أذنك وصوتك معاً بدل الاكتفاء بالقراءة النظرية.</p></div>
+<div class="glass"><b>تصحيح فوري</b><p>يرسم الموقع طبقة صوتك فوق صوت المؤذن أو القارئ لحظةً بلحظة، فترى أين زدت وأين نزلت وأين ثبتّ على النغمة.</p></div>
+<div class="glass"><b>ثمانية مقامات وأربع روايات</b><p>تعرّف على الفروق بين مقامات الأذان الثمانية، وبين قراءة قالون وحفص وورش والدوري من تسجيل حقيقي لكل منها.</p></div>
 <div class="glass"><b>خصوصية كاملة</b><p>تُعالَج الطبقة داخل متصفحك ولا يُرسل أي صوت إلى أي خادم.</p></div>
-<div class="glass"><b>مجاني وللجميع</b><p>للمؤذن المبتدئ وطالب المقامات ومحبّ الأذان، دون حساب أو تثبيت.</p></div></div>
-<h2>تعرّف على المقامات</h2><p>نبذة عن كل مقام، مع درجاته بالسنت فوق القرار (100 سنت = نصف تون).</p>
-<div class="g info">${Object.entries(MQ).map(([k,v])=>{const r=REC.find(x=>x.mq==k);return `<div class="glass"><div class="hd"><h3>${v.n}</h3><span class="tag">${v.d}</span></div><p>${INFO[k][0]}</p><p class="note">الأنسب: ${INFO[k][1]}</p><div class="steps-line">${v.c.join(" · ")}</div>${r?`<p class="note">تسجيل المقام: ${r.n}</p>`:""}</div>`}).join("")}</div>`}
+<div class="glass"><b>مجاني وللجميع</b><p>للمؤذن المبتدئ ومتعلّم المقامات وطالب القراءات ومحبّ القرآن، دون حساب أو تثبيت.</p></div></div>`}
 
 /* ---------- الصفحة الثانية ---------- */
-const R=()=>REC.find(r=>r.id==S.r),G=()=>R().segs[S.i],H=.04;
+const IQ=()=>location.hash=="#/quran",R=()=>(IQ()?QREC:REC).find(r=>r.id==S.r),G=()=>R().segs[S.i],H=.04;
 function studio(){
 const has=k=>REC.some(r=>r.mq==k);
 const mq=Object.entries(MQ).map(([k,v])=>`<button class="card ${S.m==k?'on':''} ${has(k)?'':'lock'}" onclick="pick('m','${k}')"><b>${v.n}</b><small>${has(k)?v.d:'لا يوجد تسجيل بعد'}</small></button>`).join("")+(REC.some(r=>!r.mq)?`<button class="card ${S.m=='?'?'on':''}" onclick="pick('m','?')"><b>مقام غير محدد</b><small>${REC.filter(r=>!r.mq).length} تسجيلات بانتظار تأكيد مقامها</small></button>`:"");
@@ -150,13 +181,26 @@ return `<h1 style="font-size:2.2rem">استوديو التدريب</h1>
 <h2 style="margin-top:20px">١. المقام</h2><div class="g">${mq}</div>
 <div class="${S.m?'':'lock'}"><h2>٢. المؤذن</h2><div class="g">${rs}</div><p class="note">أسماء التسجيلات مأخوذة من بيانات الملفات الصوتية نفسها.</p></div>
 <div class="${S.r?'':'lock'}"><h2>٣. شرائح الأذان</h2><div class="segs">${sg}</div></div>
-<div class="${S.i!==null?'':'lock'}"><h2>٤. استوديو التحليل</h2><div class="glass">
-${S.i!==null?`<h3>${String(S.i+1).padStart(2,"0")} — ${SG[S.i][0]}</h3>`:""}
-<canvas id="cv"></canvas><div class="fb" id="fb">اضغط «ابدأ التسجيل» وردّد الجملة مع العدّ التنازلي</div>
-<div class="row"><button class="btn" onclick="listen()">▶ استمع للمؤذن</button><button class="btn" id="rb" onclick="toggleRec()">🎙 ابدأ التسجيل</button>
-<label class="note"><input type="checkbox" ${S.rel?'checked':''} onchange="S.rel=this.checked"> أغنّي بطبقتي أنا (قارِن الفروق النغمية فقط)</label></div>
+${panel(()=>`<h3>${String(S.i+1).padStart(2,"0")} — ${SG[S.i][0]}</h3>`)}`}
+function panel(head){return `<div class="${S.i!==null?'':'lock'}"><h2>٤. استوديو التحليل</h2><div class="glass">
+${S.i!==null?head():""}
+<canvas id="cv"></canvas><div class="fb" id="fb">اضغط «ابدأ التسجيل» وردّد ${IQ()?"الآية":"الجملة"} مع العدّ التنازلي</div>
+<div class="row"><button class="btn" onclick="listen()">▶ استمع ${IQ()?"للقارئ":"للمؤذن"}</button><button class="btn" id="rb" onclick="toggleRec()">🎙 ابدأ التسجيل</button>
+<label class="note"><input type="checkbox" ${S.rel?'checked':''} onchange="S.rel=this.checked"> ${IQ()?"أقرأ":"أغنّي"} بطبقتي أنا (قارِن الفروق النغمية فقط)</label></div>
 <div id="res"></div><p class="note">يُفضّل استخدام سماعات أذن. تُعالَج الطبقة داخل المتصفح ولا يُرسل أي صوت.</p></div></div>`}
-function goStudio(m,r){stopA();S.m=m;S.r=r||null;S.i=null;if(location.hash=="#/studio")render();else location.hash="#/studio"}
+function quran(){
+const has=k=>QREC.some(r=>r.rw==k);
+const rw=Object.entries(RW).map(([k,v])=>`<button class="card ${S.m==k?'on':''} ${has(k)?'':'lock'}" onclick="pick('m','${k}')"><b>${v.n}</b><small>${has(k)?v.im:'لا يوجد تسجيل بعد'}</small></button>`).join("");
+const rs=QREC.filter(r=>r.rw==S.m).map(r=>`<button class="card ${S.r==r.id?'on':''}" onclick="pick('r','${r.id}')"><span style="font-size:1.8rem">📖</span><b>${r.n}</b><small>${r.t}</small><span class="tag" style="align-self:flex-start;margin-top:4px">${RW[r.rw]?RW[r.rw].n:r.rw}</span></button>`).join("");
+const sg=S.r?R().segs.map((x,i)=>`<button class="seg ${S.i===i?'on':''}" onclick="seg(${i})"><i>${String(i+1).padStart(2,"0")}</i><span>${R().txt[i]}</span></button>`).join(""):"";
+const info=S.m&&RW[S.m]?`<div class="glass" style="margin-top:14px"><h3>${RW[S.m].n}</h3><p>${RW[S.m].d}</p><p class="note">${RW[S.m].z}</p></div>`:"";
+return `<h1 style="font-size:2.2rem">استوديو تعلّم القرآن</h1><p>سورة الفاتحة آيةً آية. استمع للقارئ ثم أعد الآية بصوتك وقارن لحنك وإيقاعك به.</p>
+<h2 style="margin-top:20px">١. الرواية</h2><div class="g">${rw}</div>${info}
+<div class="${S.m?'':'lock'}"><h2>٢. القارئ</h2><div class="g">${rs}</div></div>
+<div class="${S.r?'':'lock'}"><h2>٣. آيات سورة الفاتحة</h2><div class="segs ayat">${sg}</div></div>
+${panel(()=>`<div class="ayah">${R().txt[S.i]}</div><p class="note" style="text-align:center">الآية ${S.i+1} من ${R().txt.length} — ${RW[R().rw]?RW[R().rw].n:""}</p>`)}
+<div class="warn"><b>تنبيه:</b> يقارن الموقع طبقة الصوت وإيقاعه فقط، ولا يُصحّح أحكام التجويد ولا مخارج الحروف. اقرأ على شيخ مُجاز لضبط الأداء.</div>`}
+function goStudio(m,r,pg){pg=pg||"a";stopA();lastPage=pg;S.m=m;S.r=r||null;S.i=null;const t=pg=="q"?"#/quran":"#/studio";if(location.hash==t)render();else location.hash=t}
 function pick(k,v){stopA();S[k]=v;if(k=="m"){S.r=null;S.i=null}if(k=="r")S.i=null;render()}
 function seg(i){S.i=i;render();listen()}
 function listen(){stopA();au=new Audio(G().a);au.play()}
@@ -180,7 +224,7 @@ catch(e){fb("lo","تعذّر الوصول إلى الميكروفون. اسمح 
 stopA();const c=ctx();await c.resume();const an=c.createAnalyser();an.fftSize=2048;const src=c.createMediaStreamSource(stream),g=G(),T=g.d;src.connect(an);
 pts=[];$("res").innerHTML="";$("rb").textContent="⏹ إيقاف";rec={stream,src,run:false,tot:0,vo:0,sum:0,sm:0,dl:[],off:0};
 for(let k=3;k>0;k--){fb("",String(k));await new Promise(r=>setTimeout(r,650));if(!rec)return}
-fb("","غنِّ الآن…");rec.run=true;rec.t0=performance.now();const buf=new Float32Array(2048);
+fb("",IQ()?"اقرأ الآن…":"غنِّ الآن…");rec.run=true;rec.t0=performance.now();const buf=new Float32Array(2048);
 (function loop(){if(!rec)return;const t=(performance.now()-rec.t0)/1000;if(t>T+.4){finish(false);return}
 an.getFloatTimeDomainData(buf);const f=yin(buf,c.sampleRate),i0=Math.floor(t/H),r0=g.f[i0];
 if(r0!=null){rec.tot++;if(f>0){const u0=1200*Math.log2(f/110),u=u0-(S.rel?rec.off:0);let d=1e9;
@@ -193,13 +237,15 @@ function finish(manual){const Q=rec;if(!Q)return;rec=null;Q.stream.getTracks().f
 $("rb").textContent="🎙 ابدأ التسجيل";draw();if(manual&&!Q.run){fb("","");return}
 const cov=Q.tot?Q.vo/Q.tot:0,acc=Q.vo?Q.sum/Q.vo:0,sc=Math.round(acc*100*Math.min(1,cov/.7));
 fb("",sc>=85?"ما شاء الله! ركوز ممتاز":sc>=60?"جيد، ثبّت النغمة أكثر":"استمع للمؤذن وأعد المحاولة");
-$("res").innerHTML=`<div class="row"><div class="score">${sc}%</div><span>مطابقة المقام</span></div><div class="row"><button class="btn" onclick="render();listen()">↻ إعادة المحاولة</button>${S.i<13?`<button class="btn" onclick="seg(${S.i+1})">الشريحة التالية ←</button>`:""}</div>`}
+$("res").innerHTML=`<div class="row"><div class="score">${sc}%</div><span>${IQ()?"مطابقة لحن القارئ":"مطابقة المقام"}</span></div><div class="row"><button class="btn" onclick="render();listen()">↻ إعادة المحاولة</button>${S.i<R().segs.length-1?`<button class="btn" onclick="seg(${S.i+1})">${IQ()?"الآية":"الشريحة"} التالية ←</button>`:""}</div>`}
 
 /* ---------- التوجيه ---------- */
-function render(){if(rec)finish(true);stopA();pts=[];const h=location.hash=="#/studio";
-$("n1").className=h?"":"on";$("n2").className=h?"on":"";$("app").innerHTML=h?studio():home();
-if(h)requestAnimationFrame(()=>draw())}
-addEventListener("hashchange",()=>{window.scrollTo(0,0);render()});addEventListener("resize",()=>!rec&&draw());fetch("data/recordings.json",{cache:"no-store"}).then(r=>r.json()).then(j=>{REC=j;render()}).catch(e=>{$("app").innerHTML='<p class="glass">تعذّر تحميل data/recordings.json — شغّل المشروع من داخل مجلد fajr-project عبر: python3 -m http.server 8000</p>'});
+function render(){if(rec)finish(true);stopA();pts=[];const h=location.hash,pg=h=="#/studio"?"a":h=="#/quran"?"q":"h";
+if(pg!=lastPage){if(lastPage!==null)S.m=S.r=S.i=null;lastPage=pg}
+["h","a","q"].forEach((k,n)=>$("n"+(n+1)).className=k==pg?"on":"");
+$("app").innerHTML=pg=="a"?studio():pg=="q"?quran():home();
+if(pg!="h")requestAnimationFrame(()=>draw())}
+addEventListener("hashchange",()=>{window.scrollTo(0,0);render()});addEventListener("resize",()=>!rec&&draw());Promise.all([fetch("data/recordings.json",{cache:"no-store"}).then(r=>r.json()),fetch("data/quran.json",{cache:"no-store"}).then(r=>r.json()).catch(()=>[])]).then(([a,q])=>{REC=a;QREC=q;render()}).catch(e=>{$("app").innerHTML='<p class="glass">تعذّر تحميل data/recordings.json — شغّل المشروع من داخل مجلد fajr-project عبر: python3 -m http.server 8000</p>'});
 </script>
 </body>
 </html>
