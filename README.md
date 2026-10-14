@@ -71,14 +71,3 @@ Internally the scorer works in "content time" (real seconds x speed). The scorin
 
 The test simulates a reciter at 1x / 0.75x / 0.5x over all Quran ayat, checks that scores stay level across speeds,
 that a wrong melody still scores low, and that the old unscaled timeline would have scored a 0.5x recitation about 40 points lower.
-
-## Progress history
-
-Every attempt that runs to the end of the ayah/phrase is saved in the browser (`localStorage`, key `sada.hist`):
-date, recording, ayah/phrase number, speed and score. Nothing is sent to a server. Stopping a recording early is **not** saved.
-Below the analysis studio (section 5) you get: attempts, average of the last 10, best score, days practiced,
-the best score and attempt count for every ayah of the selected recording (tap a row to practice it),
-a trend curve with the 85% line, and the last 8 attempts. "Clear" only deletes the history of the current page (Adhan or Quran).
-The history is capped at the latest 500 attempts. It is per browser and per device (clearing site data deletes it).
-The history logic is covered by `node test/speed-sim.js`.
-
