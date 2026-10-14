@@ -38,6 +38,13 @@ p{line-height:1.9;color:var(--mu);margin:.3em 0}
 .btn.on{border-color:var(--cy);background:rgba(56,189,248,.18);color:var(--cy)}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .spd{min-width:64px}
+.stats{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));margin-bottom:14px}
+.stat{background:var(--gl);border:1px solid var(--bd);border-radius:14px;padding:10px 12px;text-align:center}.stat b{display:block;font-size:1.6rem;color:var(--go)}.stat span{font-size:.8rem;color:var(--mu)}
+.hr{font:inherit;color:inherit;text-align:right;display:grid;grid-template-columns:30px 1fr 48px 40px;gap:10px;align-items:center;background:var(--gl);border:1px solid var(--bd);border-radius:12px;padding:8px 12px;cursor:pointer;width:100%}
+.hr.on{border-color:var(--cy)}.hr:focus-visible{outline:2px solid var(--cy);outline-offset:2px}.hr>i{font-style:normal;color:var(--go);font-weight:800}
+.bar{height:8px;border-radius:6px;background:rgba(255,255,255,.1);overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--cy),var(--go))}.bar i.m{background:var(--ok)}
+.hl{display:grid;gap:6px}.hl div{display:flex;justify-content:space-between;gap:10px;font-size:.9rem;padding:6px 12px;background:var(--gl);border-radius:10px}
+.hs{display:grid;gap:6px;margin:10px 0}
 canvas{width:100%;height:260px;display:block;background:rgba(0,0,0,.28);border-radius:14px}
 .fb{margin:14px 0;min-height:56px;border-radius:14px;padding:14px;text-align:center;font-size:1.3rem;font-weight:800;border:1px solid var(--bd);transition:background .2s}
 .fb.hi{background:rgba(56,189,248,.18);border-color:var(--cy)}.fb.lo{background:rgba(239,68,68,.2);border-color:var(--lo)}.fb.ok{background:rgba(34,197,94,.2);border-color:var(--ok)}
@@ -137,6 +144,12 @@ if(rel){Q.dl.push(fold(u0-r0));if(Q.dl.length%8==1)Q.off=[...Q.dl].sort((a,b)=>a
 Q.vo++;Q.sum+=Math.max(0,1-Math.abs(d)/150);Q.sm=.65*Q.sm+.35*d;return{d,y:r0+d}}
 const newQ=()=>({tot:0,vo:0,sum:0,sm:0,dl:[],off:0});
 const scoreOf=Q=>{const cov=Q.tot?Q.vo/Q.tot:0,acc=Q.vo?Q.sum/Q.vo:0;return Math.round(acc*100*Math.min(1,cov/.7))};
+/* ---------- سجلّ التقدّم (دوال نقية) ---------- */
+const HMAX=500;
+const histAdd=(a,e)=>[...a,e].slice(-HMAX);
+function segStats(a,pg,r,i){const l=a.filter(e=>e.pg==pg&&e.r==r&&e.i==i);if(!l.length)return{n:0,best:0,last:0,first:0};return{n:l.length,best:Math.max(...l.map(e=>e.sc)),last:l[l.length-1].sc,first:l[0].sc}}
+function histStats(a,pg){const l=a.filter(e=>e.pg==pg);if(!l.length)return{n:0,avg:0,best:0,days:0};const r=l.slice(-10);
+return{n:l.length,avg:Math.round(r.reduce((s,e)=>s+e.sc,0)/r.length),best:Math.max(...l.map(e=>e.sc)),days:new Set(l.map(e=>new Date(e.t).toDateString())).size}}
 /*PURE-END*/
 
 /* ---------- الصفحة الأولى ---------- */
@@ -198,7 +211,8 @@ return `<h1 style="font-size:2.2rem">استوديو التدريب</h1>
 <h2 style="margin-top:20px">١. المقام</h2><div class="g">${mq}</div>
 <div class="${S.m?'':'lock'}"><h2>٢. المؤذن</h2><div class="g">${rs}</div><p class="note">أسماء التسجيلات مأخوذة من بيانات الملفات الصوتية نفسها.</p></div>
 <div class="${S.r?'':'lock'}"><h2>٣. شرائح الأذان</h2><div class="segs">${sg}</div></div>
-${panel(()=>`<h3>${String(S.i+1).padStart(2,"0")} — ${SG[S.i][0]}</h3>`)}`}
+${panel(()=>`<h3>${String(S.i+1).padStart(2,"0")} — ${SG[S.i][0]}</h3>`)}
+${histBox()}`}
 const SPD=[[1,"1×"],[.75,"0.75×"],[.5,"0.5×"]];
 function spRow(){return `<div class="row" role="group" aria-label="${IQ()?"سرعة الاستماع والتلاوة":"سرعة الاستماع والتسجيل"}"><span class="note">السرعة:</span>${SPD.map(([v,l])=>`<button class="btn spd ${S.sp==v?'on':''}" data-v="${v}" aria-pressed="${S.sp==v}" onclick="setSp(${v})"><bdi dir="ltr">${l}</bdi></button>`).join("")}<span class="note" id="spn"></span></div>`}
 function spNote(){const e=$("spn");if(e)e.textContent=S.i!==null?`مدة ${IQ()?"الآية":"الجملة"} بهذه السرعة ≈ ${(G().d/S.sp).toFixed(1)} ث`:""}
@@ -223,6 +237,7 @@ return `<h1 style="font-size:2.2rem">استوديو تعلّم القرآن</h1>
 <div class="${S.m?'':'lock'}"><h2>٢. القارئ</h2><div class="g">${rs}</div></div>
 <div class="${S.r?'':'lock'}"><h2>٣. آيات سورة الفاتحة</h2><div class="segs ayat">${sg}</div></div>
 ${panel(()=>`<div class="ayah">${R().txt[S.i]}</div><p class="note" style="text-align:center">الآية ${S.i+1} من ${R().txt.length} — ${RW[R().rw]?RW[R().rw].n:""}</p>`)}
+${histBox()}
 <div class="warn"><b>تنبيه:</b> يقارن الموقع طبقة الصوت وإيقاعه فقط، ولا يُصحّح أحكام التجويد ولا مخارج الحروف. اقرأ على شيخ مُجاز لضبط الأداء.</div>`}
 function goStudio(m,r,pg){pg=pg||"a";stopA();lastPage=pg;S.m=m;S.r=r||null;S.i=null;const t=pg=="q"?"#/quran":"#/studio";if(location.hash==t)render();else location.hash=t}
 function pick(k,v){stopA();S[k]=v;if(k=="m"){S.r=null;S.i=null}if(k=="r")S.i=null;render()}
@@ -258,15 +273,42 @@ if(rec.sm<-35)fb("lo","🔴 زود شوية / ارفع الطبقة");else if(re
 draw(tc);requestAnimationFrame(loop)})()}
 function finish(manual){const Q=rec;if(!Q)return;rec=null;Q.stream.getTracks().forEach(t=>t.stop());Q.src.disconnect();lockSp(false);
 $("rb").textContent="🎙 ابدأ التسجيل";draw();if(manual&&!Q.run){fb("","");return}
-const sc=scoreOf(Q);
+const sc=scoreOf(Q),pg=IQ()?"q":"a",prev=segStats(HIST,pg,S.r,S.i).best;let msg="";
+if(!manual){msg=prev&&sc>prev?`🎉 أفضل من نتيجتك السابقة (${prev}%)`:prev?`أفضل نتيجة سابقة لهذه ${IQ()?"الآية":"الشريحة"}: ${prev}%`:"";histPush({t:Date.now(),pg,r:S.r,i:S.i,sp:S.sp,sc})}
+else msg="توقّفتَ قبل النهاية، لذلك لم تُحفظ هذه المحاولة في السجل.";
 fb("",sc>=85?"ما شاء الله! ركوز ممتاز":sc>=60?"جيد، ثبّت النغمة أكثر":"استمع للمؤذن وأعد المحاولة");
-$("res").innerHTML=`<div class="row"><div class="score">${sc}%</div><span>${IQ()?"مطابقة لحن القارئ":"مطابقة المقام"}</span></div><div class="row"><button class="btn" onclick="render();listen()">↻ إعادة المحاولة</button>${S.i<R().segs.length-1?`<button class="btn" onclick="seg(${S.i+1})">${IQ()?"الآية":"الشريحة"} التالية ←</button>`:""}</div>`}
+$("res").innerHTML=`<div class="row"><div class="score">${sc}%</div><span>${IQ()?"مطابقة لحن القارئ":"مطابقة المقام"}</span></div>${msg?`<p class="note">${msg}</p>`:""}<div class="row"><button class="btn" onclick="render();listen()">↻ إعادة المحاولة</button>${S.i<R().segs.length-1?`<button class="btn" onclick="seg(${S.i+1})">${IQ()?"الآية":"الشريحة"} التالية ←</button>`:""}</div>`}
+
+/* ---------- سجلّ التقدّم (التخزين والعرض) ---------- */
+const HK="sada.hist";
+const histLoad=()=>{try{const v=JSON.parse(localStorage.getItem(HK)||"[]");return Array.isArray(v)?v.filter(e=>e&&typeof e.sc=="number"&&typeof e.t=="number"):[]}catch(e){return[]}};
+let HIST=histLoad();
+const histSave=()=>{try{localStorage.setItem(HK,JSON.stringify(HIST))}catch(e){}};
+function histPush(e){HIST=histAdd(HIST,e);histSave();refreshHist()}
+function clearHist(){const pg=IQ()?"q":"a";if(!confirm("حذف سجلّ التقدّم لهذه الصفحة؟ لا يمكن التراجع."))return;HIST=HIST.filter(e=>e.pg!=pg);histSave();refreshHist()}
+const histBox=()=>`<div><h2>٥. سجلّ التقدّم</h2><div class="glass" id="hist"></div></div>`;
+function refreshHist(){const e=$("hist");if(e)e.innerHTML=histHTML()}
+function spark(v){v=v.slice(-30);const W=300,HT=80,n=v.length,X=i=>8+i/(n-1)*(W-16),Y=s=>HT-8-s/100*(HT-16);
+return `<svg viewBox="0 0 ${W} ${HT}" style="width:100%;height:90px;background:rgba(0,0,0,.28);border-radius:12px;display:block" role="img" aria-label="منحنى النتائج"><line x1="0" x2="${W}" y1="${Y(85)}" y2="${Y(85)}" style="stroke:rgba(34,197,94,.55)" stroke-dasharray="4 4"/><polyline fill="none" style="stroke:var(--cy)" stroke-width="2.5" stroke-linejoin="round" points="${v.map((s,i)=>X(i).toFixed(1)+","+Y(s).toFixed(1)).join(" ")}"/>${v.map((s,i)=>`<circle cx="${X(i).toFixed(1)}" cy="${Y(s).toFixed(1)}" r="3" style="fill:var(--go)"/>`).join("")}</svg>`}
+function histHTML(){const pg=IQ()?"q":"a",u=IQ()?"الآية":"الشريحة",st=histStats(HIST,pg);
+if(!st.n)return `<p class="note">لا توجد محاولات بعد. أكمل ${u} حتى نهايتها وستُحفظ نتيجتك هنا. يُحفظ السجل في متصفحك فقط ولا يُرسل إلى أي خادم.</p>`;
+let h=`<div class="stats">${[[st.n,"محاولات"],[st.avg+"%","متوسط آخر 10"],[st.best+"%","أفضل نتيجة"],[st.days,"أيام التدرّب"]].map(([v,l])=>`<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("")}</div>`;
+if(S.r&&R()){const rr=R();
+h+=`<h3>${IQ()?"آيات":"شرائح"} هذا التسجيل (أفضل نتيجة وعدد المحاولات)</h3><div class="hs">`+rr.segs.map((_,i)=>{const s=segStats(HIST,pg,S.r,i);
+return `<button class="hr ${S.i===i?'on':''}" onclick="seg(${i})" aria-label="${u} ${i+1}"><i>${String(i+1).padStart(2,"0")}</i><div class="bar"><i class="${s.best>=85?'m':''}" style="width:${s.best}%"></i></div><b>${s.n?s.best+"%":"—"}</b><span class="note">${s.n?"×"+s.n:""}</span></button>`}).join("")+`</div>`;
+const tl=HIST.filter(e=>e.pg==pg&&e.r==S.r&&(S.i===null||e.i==S.i));
+h+=`<h3>${S.i!==null?"منحنى "+u+" "+(S.i+1):"منحنى كل محاولات هذا التسجيل"}</h3>`;
+if(tl.length>=2){const d=tl[tl.length-1].sc-tl[0].sc;h+=spark(tl.map(e=>e.sc))+`<p class="note">الخط المتقطع = 85%. الفرق منذ أول محاولة: ${d>0?"+":""}${d} نقطة (${tl.length} محاولات).</p>`}
+else h+=`<p class="note">تحتاج محاولتين على الأقل لرسم المنحنى.</p>`}
+const rc=HIST.filter(e=>e.pg==pg).slice(-8).reverse();
+h+=`<h3>آخر المحاولات</h3><div class="hl">`+rc.map(e=>`<div><span>${new Date(e.t).toLocaleString("ar",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})} — ${u} ${e.i+1}</span><span><bdi dir="ltr">${e.sp}×</bdi> · <b style="color:${e.sc>=85?'var(--ok)':e.sc>=60?'var(--go)':'var(--lo)'}">${e.sc}%</b></span></div>`).join("")+`</div><div class="row"><button class="btn" onclick="clearHist()">🗑 مسح السجل</button></div>`;
+return h}
 
 /* ---------- التوجيه ---------- */
 function render(){if(rec)finish(true);stopA();pts=[];const h=location.hash,pg=h=="#/studio"?"a":h=="#/quran"?"q":"h";
 if(pg!=lastPage){if(lastPage!==null)S.m=S.r=S.i=null;lastPage=pg}
 ["h","a","q"].forEach((k,n)=>$("n"+(n+1)).className=k==pg?"on":"");
-$("app").innerHTML=pg=="a"?studio():pg=="q"?quran():home();spNote();
+$("app").innerHTML=pg=="a"?studio():pg=="q"?quran():home();spNote();refreshHist();
 if(pg!="h")requestAnimationFrame(()=>draw())}
 addEventListener("hashchange",()=>{window.scrollTo(0,0);render()});addEventListener("resize",()=>!rec&&draw());Promise.all([fetch("data/recordings.json",{cache:"no-store"}).then(r=>r.json()),fetch("data/quran.json",{cache:"no-store"}).then(r=>r.json()).catch(()=>[])]).then(([a,q])=>{REC=a;QREC=q;render()}).catch(e=>{$("app").innerHTML='<p class="glass">تعذّر تحميل data/recordings.json — شغّل المشروع من داخل مجلد fajr-project عبر: python3 -m http.server 8000</p>'});
 </script>

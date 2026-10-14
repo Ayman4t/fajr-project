@@ -7,7 +7,7 @@ const root = path.join(__dirname, "..");
 const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const m = html.match(/\/\*PURE-START[\s\S]*?\*\/([\s\S]*?)\/\*PURE-END\*\//);
 if (!m) throw new Error("PURE block not found in index.html");
-const L = new Function(m[1] + "; return {yin,H,fold,stepRec,newQ,scoreOf};")();
+const L = new Function(m[1] + "; return {yin,H,fold,stepRec,newQ,scoreOf,histAdd,segStats,histStats};")();
 const quran = JSON.parse(fs.readFileSync(path.join(root, "data/quran.json"), "utf8"));
 
 let fails = 0;
@@ -99,6 +99,26 @@ for (const sp of [1, 0.5]) {
 }
 ok(e2e[0.5] >= e2e[1] - 6, `with real YIN, 0.5x stays within 6 points of 1x (${e2e[0.5].toFixed(1)}% vs ${e2e[1].toFixed(1)}%)`);
 ok(e2e[0.5] >= 80, `with real YIN, 0.5x scores >= 80% (${e2e[0.5].toFixed(1)}%)`);
+
+
+// ---- progress history logic ----
+console.log("\nProgress history logic:");
+const day = d => new Date(2026, 9, d, 12).getTime();
+let h = [];
+[[1,60],[1,72],[2,81],[3,90]].forEach(([d, sc], k) => h = L.histAdd(h, { t: day(d), pg: "q", r: "hafs", i: 0, sp: k < 2 ? 1 : 0.5, sc }));
+h = L.histAdd(h, { t: day(3), pg: "q", r: "hafs", i: 1, sp: 1, sc: 40 });
+h = L.histAdd(h, { t: day(3), pg: "a", r: "a18", i: 0, sp: 1, sc: 99 });
+const s0 = L.segStats(h, "q", "hafs", 0);
+ok(s0.n === 4 && s0.best === 90 && s0.first === 60 && s0.last === 90, `segStats: n=${s0.n} best=${s0.best} first=${s0.first} last=${s0.last}`);
+ok(L.segStats(h, "q", "hafs", 5).n === 0, "segStats on an untried ayah is empty");
+ok(L.segStats(h, "a", "a18", 0).best === 99 && L.segStats(h, "q", "a18", 0).n === 0, "Adhan and Quran histories stay separate");
+const hs = L.histStats(h, "q");
+ok(hs.n === 5 && hs.best === 90 && hs.days === 3 && hs.avg === Math.round((60+72+81+90+40)/5), `histStats: n=${hs.n} best=${hs.best} days=${hs.days} avg=${hs.avg}`);
+let big = []; for (let k = 0; k < 650; k++) big = L.histAdd(big, { t: k, pg: "q", r: "x", i: 0, sp: 1, sc: k % 100 });
+ok(big.length === 500 && big[big.length - 1].t === 649 && big[0].t === 150, "history is capped at 500, newest kept");
+let many = []; for (let k = 0; k < 15; k++) many = L.histAdd(many, { t: day(1), pg: "q", r: "x", i: 0, sp: 1, sc: k < 5 ? 0 : 100 });
+ok(L.histStats(many, "q").avg === 100, "average uses only the last 10 attempts");
+ok(L.histStats([], "q").n === 0, "empty history is safe");
 
 // YIN sanity
 const sr = 44100, b = new Float32Array(2048); for (let i = 0; i < 2048; i++) b[i] = .3 * Math.sin(2 * Math.PI * 220 * i / sr);
