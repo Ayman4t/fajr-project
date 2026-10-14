@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>صوت الفجر — تدريب أذان الفجر بالمقامات</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--bg:#0B0F19;--bg2:#111827;--cy:#38BDF8;--go:#F59E0B;--tx:#E5E7EB;--mu:#94A3B8;--gl:rgba(255,255,255,.06);--bd:rgba(255,255,255,.13);--ok:#22C55E;--lo:#EF4444;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;font-family:Cairo,"Segoe UI",Tahoma,sans-serif;color:var(--tx);min-height:100vh;background:radial-gradient(1100px 560px at 85% -10%,rgba(56,189,248,.2),transparent),radial-gradient(800px 480px at 5% 5%,rgba(245,158,11,.13),transparent),#0B0F19}
+.wrap{max-width:1040px;margin:0 auto;padding:0 18px 60px}
+nav{display:flex;justify-content:space-between;align-items:center;padding:16px 0;gap:10px}
+nav b{font-size:1.25rem;font-weight:800}nav b span{color:var(--go)}
+nav a{color:var(--mu);text-decoration:none;margin-inline-start:16px;font-weight:600}nav a.on{color:var(--cy)}
+.glass{background:var(--gl);border:1px solid var(--bd);border-radius:20px;backdrop-filter:blur(14px);padding:20px}
+h1{font-size:clamp(2rem,6vw,3.6rem);line-height:1.25;margin:.2em 0;font-weight:800}
+h2{font-size:1.6rem;margin:46px 0 16px;font-weight:800}h3{margin:0 0 6px}
+p{line-height:1.9;color:var(--mu);margin:.3em 0}
+.hero{padding:34px 0 10px;text-align:right}
+.bars{display:flex;gap:5px;align-items:center;height:70px;margin:18px 0}
+.bars i{width:7px;border-radius:5px;background:linear-gradient(var(--cy),var(--go));box-shadow:0 0 14px rgba(56,189,248,.6);animation:w 1.4s ease-in-out infinite alternate}
+@keyframes w{from{height:12%}to{height:100%}}
+@media(prefers-reduced-motion:reduce){.bars i{animation:none;height:50%}}
+.btn{font:inherit;font-weight:600;color:var(--tx);background:var(--gl);border:1px solid var(--bd);border-radius:14px;padding:10px 18px;cursor:pointer}
+.btn:hover{border-color:var(--cy)}.btn:focus-visible,.card:focus-visible,.seg:focus-visible{outline:2px solid var(--cy);outline-offset:2px}
+.cta{background:linear-gradient(135deg,var(--cy),#0EA5E9);color:#06121f;border:0;box-shadow:0 0 28px rgba(56,189,248,.55);font-size:1.1rem;padding:14px 28px;text-decoration:none;display:inline-block;border-radius:16px;font-weight:800}
+.g{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+.card{font:inherit;color:inherit;text-align:right;background:var(--gl);border:1px solid var(--bd);border-radius:18px;padding:16px;cursor:pointer;display:flex;flex-direction:column;gap:4px}
+.card small{color:var(--mu)}.card.on{border-color:var(--go);box-shadow:0 0 22px rgba(245,158,11,.35)}
+.card b{font-size:1.15rem}
+.steps{display:flex;gap:12px;align-items:stretch;flex-wrap:wrap}.steps .glass{flex:1;min-width:200px}.steps em{align-self:center;font-style:normal;color:var(--go);font-size:1.6rem}
+.segs{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
+.seg{font:inherit;color:inherit;text-align:right;background:var(--gl);border:1px solid var(--bd);border-radius:14px;padding:10px 12px;cursor:pointer;display:flex;gap:8px;align-items:center}
+.seg i{font-style:normal;color:var(--go);font-weight:800}.seg.on{border-color:var(--cy);box-shadow:0 0 18px rgba(56,189,248,.4)}
+.lock{opacity:.45;pointer-events:none}
+canvas{width:100%;height:260px;display:block;background:rgba(0,0,0,.28);border-radius:14px}
+.fb{margin:14px 0;min-height:56px;border-radius:14px;padding:14px;text-align:center;font-size:1.3rem;font-weight:800;border:1px solid var(--bd);transition:background .2s}
+.fb.hi{background:rgba(56,189,248,.18);border-color:var(--cy)}.fb.lo{background:rgba(239,68,68,.2);border-color:var(--lo)}.fb.ok{background:rgba(34,197,94,.2);border-color:var(--ok)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0;align-items:center}
+.score{font-size:3rem;font-weight:800;color:var(--go)}
+.note{font-size:.85rem;color:var(--mu)}
+.tag{display:inline-block;font-size:.8rem;font-weight:800;color:#06121f;background:var(--go);border-radius:999px;padding:2px 12px;white-space:nowrap}
+.why{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.why .glass b{color:var(--go)}
+.info .glass{display:flex;flex-direction:column;gap:6px}
+.info .hd{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.info .hd h3{margin:0}
+.steps-line{font-size:.82rem;color:var(--cy);direction:ltr;text-align:right;letter-spacing:.02em}
+footer{margin-top:60px;padding:26px 0 8px;border-top:1px solid var(--bd);text-align:center;color:var(--mu)}
+footer b{color:var(--go);font-weight:800;letter-spacing:.02em}
+.lib{display:grid;gap:10px}
+.lib .it{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:12px 16px;background:var(--gl);border:1px solid var(--bd);border-radius:14px}
+@media(max-width:560px){.lib .it{grid-template-columns:1fr auto}.lib .it .btn{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav><b>صوت <span>الفجر</span></b><div><a href="#/" id="n1">الرئيسية</a><a href="#/studio" id="n2">منطقة التدريب</a></div></nav>
+<main id="app"></main>
+<footer>صُنع بواسطة <b>aymanstack</b></footer>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const MQ={
+bayati:{n:"البياتي",d:"السكينة والدفء",c:[0,150,300,500,700,800,1000,1200]},
+saba:{n:"الصبا",d:"الخشوع والوجدان",c:[0,150,300,400,600,800,1000,1200]},
+rast:{n:"الرست",d:"الوقار والاتزان",c:[0,200,350,500,700,900,1050,1200]},
+hijaz:{n:"الحجاز",d:"الشجن والتأمل",c:[0,100,400,500,700,800,1000,1200]},
+nahawand:{n:"النهاوند",d:"الرقّة والحنين",c:[0,200,300,500,700,800,1100,1200]},
+sikah:{n:"السيكا",d:"الصفاء والهدوء",c:[0,150,350,500,650,850,1050,1200]},
+ajam:{n:"العجم",d:"الإشراق والصفاء",c:[0,200,400,500,700,900,1100,1200]},
+kurd:{n:"الكرد",d:"الصدق والحزن الهادئ",c:[0,100,300,500,700,800,1000,1200]}};
+const SG=[["الله أكبر الله أكبر",0],["الله أكبر الله أكبر",0],["أشهد أن لا إله إلا الله",1],["أشهد أن لا إله إلا الله",1],["أشهد أن محمداً رسول الله",2],["أشهد أن محمداً رسول الله",2],["حيّ على الصلاة",3],["حيّ على الصلاة",3],["حيّ على الفلاح",4],["حيّ على الفلاح",4],["الصلاة خير من النوم",5],["الصلاة خير من النوم",5],["الله أكبر الله أكبر",0],["لا إله إلا الله",6]];
+const INFO={
+bayati:["من أكثر المقامات انتشاراً في الأذان والتلاوة. تقع نغمته الثانية على ربع تون، فيمنحه ذلك دفئاً وسكينة قريبة من القلب.","الأذان والتلاوة والإنشاد الديني"],
+saba:["مقام ضيّق الأبعاد يُعرف بخشوعه وشجنه الهادئ، ويرتبط كثيراً بأذان الفجر لما فيه من رقّة ووجدان.","أذان الفجر والابتهالات"],
+rast:["يُعدّ من أصول المقامات في الموسيقى العربية. ثلثه ونغمة سابعته على ربع تون، ويتّسم بوقار واتزان وثبات.","الأذان والتلاوة والمدائح"],
+hijaz:["مقام مميّز بقفزة موسعة بين الدرجتين الثانية والثالثة تمنحه شجناً وتأملاً. ويرتبط في الأذهان بنداء الحرمين.","الأذان وأجواء التأمل"],
+nahawand:["يشبه السلم الصغير في الموسيقى الغربية، وطابعه رقيق حنون يميل إلى العاطفة والشوق.","الأذان والأناشيد والموشحات"],
+sikah:["يبدأ من نغمة السيكا ذات الثلث على ربع تون، وطابعه صافٍ هادئ تتسع فيه المدّات والانتقالات.","الأذان والتلاوة"],
+ajam:["يشبه السلم الكبير في الموسيقى الغربية، وطابعه مشرق صافٍ يوحي بالأمل والبهجة.","الأذان والابتهالات المشرقة"],
+kurd:["يشبه النمط الفريجي، فبعد القرار نصف تون ثم ثلث صغير. طابعه صادق عميق وحزنه هادئ بلا تكلّف.","الأذان والأناشيد الهادئة"]};
+let REC=[];
+const S={m:null,r:null,i:null,rel:true};
+let rec=null,pts=[],AC,cur,au;
+
+/* ---------- الصوت المرجعي (توليف) ---------- */
+const ctx=()=>AC||(AC=new(window.AudioContext||window.webkitAudioContext)());
+const stopA=()=>{try{cur&&cur.stop()}catch(e){}cur=0;if(au){au.pause();au=null}};
+const hzOf=(m,d,tn)=>tn*2**(MQ[m].c[d]/1200);
+function play(ns,tn,m){stopA();const c=ctx();c.resume();const t0=c.currentTime+.05,e=ns[ns.length-1],T=e.t+e.L;
+const o=c.createOscillator(),f=c.createBiquadFilter(),g=c.createGain(),l=c.createOscillator(),lg=c.createGain();
+o.type="sawtooth";f.type="lowpass";f.frequency.value=1300;l.frequency.value=5.5;lg.gain.value=3;
+l.connect(lg);lg.connect(o.frequency);o.connect(f);f.connect(g);g.connect(c.destination);
+ns.forEach((n,i)=>{const fr=hzOf(m,n.d,tn);i?o.frequency.setTargetAtTime(fr,t0+n.t,.04):o.frequency.setValueAtTime(fr,t0)});
+g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(.2,t0+.08);g.gain.setValueAtTime(.2,t0+T-.15);g.gain.linearRampToValueAtTime(0,t0+T);
+o.start(t0);l.start(t0);o.stop(t0+T+.05);l.stop(t0+T+.05);cur=o}
+function sample(k){const rr=REC.find(x=>x.mq==k);if(rr){stopA();const a=au=new Audio(rr.segs[0].a);a.currentTime=.1;a.play();setTimeout(()=>a.pause(),5000);return}const ns=[0,1,2,3,4,3,2,1,0].map((d,i)=>({d,t:i*.55,L:.55}));play(ns,146.83,k)}
+
+/* ---------- كشف الطبقة (YIN) ---------- */
+function yin(b,sr){let r=0;for(const v of b)r+=v*v;if(Math.sqrt(r/b.length)<.012)return 0;
+const n=b.length>>1,d=new Float32Array(n),cm=new Float32Array(n);
+for(let t=1;t<n;t++){let s=0;for(let i=0;i<n;i++){const x=b[i]-b[i+t];s+=x*x}d[t]=s}
+cm[0]=1;let run=0;for(let t=1;t<n;t++){run+=d[t];cm[t]=d[t]*t/run}
+const lo=Math.floor(sr/800);let t=lo;
+for(;t<n-1;t++)if(cm[t]<.14){while(t+1<n-1&&cm[t+1]<cm[t])t++;break}
+if(t>=n-1)return 0;
+const a=cm[t-1],bb=cm[t],c=cm[t+1],den=a-2*bb+c,sh=den?.5*(a-c)/den:0;
+return sr/(t+sh)}
+
+/* ---------- الصفحة الأولى ---------- */
+function home(){
+const bars=Array.from({length:26},(_,i)=>`<i style="animation-delay:${(i*.11).toFixed(2)}s"></i>`).join("");
+const mq=Object.entries(MQ).map(([k,v])=>{const r=REC.find(x=>x.mq==k);return `<div class="glass"><h3>${v.n}</h3><p>${v.d} — الأنسب لأجواء السَّحر.</p>${r?`<p class="note">المؤذن: ${r.n}</p>`:""}<div class="row"><button class="btn" onclick="sample('${k}')">▶ عينة 5 ثوانٍ</button>${r?`<button class="btn" onclick="goStudio('${k}','${r.id}')">تدرّب ←</button>`:""}</div></div>`}).join("");
+const known=r=>r.mq&&MQ[r.mq],order=k=>known({mq:k})?Object.keys(MQ).indexOf(k):99;
+const lib=[...REC].sort((a,b)=>order(a.mq)-order(b.mq)).map(r=>`<div class="it"><div><b>${r.n}</b><div class="note">${r.t}</div></div><span class="tag">${known(r)?"مقام "+MQ[r.mq].n:"غير محدد"}</span><button class="btn" onclick="goStudio('${known(r)?r.mq:"?"}','${r.id}')">تدرّب ←</button></div>`).join("");
+return `<section class="hero"><h1>صوت الفجر: أتقن نداء الصلاة بأعذب المقامات</h1>
+<p style="max-width:620px">تدرّب على أذان الفجر جملةً جملة، وشاهد طبقة صوتك وهي تُقارَن بالمقام لحظةً بلحظة، لتضبط الركوز والانتقالات وتتقن النداء.</p>
+<div class="bars" aria-hidden="true">${bars}</div><a class="cta" href="#/studio">انتقل لمنطقة التدريب</a></section>
+<h2>ما يميّز أذان الفجر</h2><div class="g">
+<div class="glass"><h3>«الصلاة خير من النوم»</h3><p>جملة يختص بها أذان الفجر، تُؤدّى مرتين بنبرة تُوقظ القلب قبل الجسد.</p></div>
+<div class="glass"><h3>سكون الوقت</h3><p>يُرفع الأذان في هدوء الصباح الباكر، فيناسبه صوت صافٍ متّزن بلا تكلّف.</p></div>
+<div class="glass"><h3>وقار وخشوع</h3><p>المدّ والانتقال بين الدرجات هما ما يمنح النداء هيبته، وهذا ما ستدرّب أذنك وصوتك عليه.</p></div></div>
+<h2>المقامات الأنسب للفجر</h2><div class="g">${mq}</div>
+<h2>تصنيف التسجيلات</h2><p>كل تسجيل مصنَّف باسم المؤذن والمقام الذي يُؤدّى به.</p><div class="lib">${lib}</div>
+<h2>كيف يعمل النظام؟</h2><div class="steps">
+<div class="glass"><h3>اختر المقام والمؤذن</h3><p>حدّد المقام ثم التسجيل الذي تريد التدريب عليه.</p></div><em>←</em>
+<div class="glass"><h3>تدرّب شريحة بشريحة</h3><p>الأذان مقسّم إلى 14 شريحة، استمع لكل منها ثم أعدها بصوتك.</p></div><em>←</em>
+<div class="glass"><h3>تلقَّ تصحيحاً لحظياً</h3><p>تعرف فوراً هل صوتك أعلى أو أخفض أو على النغمة تماماً.</p></div></div>
+<h2>لماذا هذا الموقع مهمّ؟</h2><div class="why">
+<div class="glass"><b>صون هذا الفن</b><p>الأذان نداءٌ يومي تتوارثه الأجيال، وتعلّم أدائه بالمقام الصحيح يحفظ جمال هذا التراث ويُبقيه حياً.</p></div>
+<div class="glass"><b>تعلّم بالأذن والتجربة</b><p>تستمع إلى مؤذنين متقنين ثم تُعيد الجملة بصوتك، فتتدرّب أذنك وصوتك معاً بدل الاكتفاء بالقراءة النظرية.</p></div>
+<div class="glass"><b>تصحيح فوري</b><p>يرسم الموقع طبقة صوتك فوق المقام لحظةً بلحظة، فترى أين زدت وأين نزلت وأين ثبتّ على النغمة.</p></div>
+<div class="glass"><b>ثمانية مقامات</b><p>تعرّف على الفروق بين البياتي والصبا والرست والحجاز والنهاوند والسيكا والعجم والكرد من تسجيل حقيقي لكل مقام.</p></div>
+<div class="glass"><b>خصوصية كاملة</b><p>تُعالَج الطبقة داخل متصفحك ولا يُرسل أي صوت إلى أي خادم.</p></div>
+<div class="glass"><b>مجاني وللجميع</b><p>للمؤذن المبتدئ وطالب المقامات ومحبّ الأذان، دون حساب أو تثبيت.</p></div></div>
+<h2>تعرّف على المقامات</h2><p>نبذة عن كل مقام، مع درجاته بالسنت فوق القرار (100 سنت = نصف تون).</p>
+<div class="g info">${Object.entries(MQ).map(([k,v])=>{const r=REC.find(x=>x.mq==k);return `<div class="glass"><div class="hd"><h3>${v.n}</h3><span class="tag">${v.d}</span></div><p>${INFO[k][0]}</p><p class="note">الأنسب: ${INFO[k][1]}</p><div class="steps-line">${v.c.join(" · ")}</div>${r?`<p class="note">تسجيل المقام: ${r.n}</p>`:""}</div>`}).join("")}</div>`}
+
+/* ---------- الصفحة الثانية ---------- */
+const R=()=>REC.find(r=>r.id==S.r),G=()=>R().segs[S.i],H=.04;
+function studio(){
+const has=k=>REC.some(r=>r.mq==k);
+const mq=Object.entries(MQ).map(([k,v])=>`<button class="card ${S.m==k?'on':''} ${has(k)?'':'lock'}" onclick="pick('m','${k}')"><b>${v.n}</b><small>${has(k)?v.d:'لا يوجد تسجيل بعد'}</small></button>`).join("")+(REC.some(r=>!r.mq)?`<button class="card ${S.m=='?'?'on':''}" onclick="pick('m','?')"><b>مقام غير محدد</b><small>${REC.filter(r=>!r.mq).length} تسجيلات بانتظار تأكيد مقامها</small></button>`:"");
+const rs=REC.filter(r=>S.m=='?'?!r.mq:r.mq==S.m).map(r=>`<button class="card ${S.r==r.id?'on':''}" onclick="pick('r','${r.id}')"><span style="font-size:1.8rem">🎙</span><b>${r.n}</b><small>${r.t}</small>${r.mq&&MQ[r.mq]?`<span class="tag" style="align-self:flex-start;margin-top:4px">مقام ${MQ[r.mq].n}</span>`:""}</button>`).join("");
+const sg=S.r?R().segs.map((s,i)=>`<button class="seg ${S.i===i?'on':''}" onclick="seg(${i})"><i>${String(i+1).padStart(2,"0")}</i><span>${SG[i][0]}</span></button>`).join(""):"";
+return `<h1 style="font-size:2.2rem">استوديو التدريب</h1>
+<h2 style="margin-top:20px">١. المقام</h2><div class="g">${mq}</div>
+<div class="${S.m?'':'lock'}"><h2>٢. المؤذن</h2><div class="g">${rs}</div><p class="note">أسماء التسجيلات مأخوذة من بيانات الملفات الصوتية نفسها.</p></div>
+<div class="${S.r?'':'lock'}"><h2>٣. شرائح الأذان</h2><div class="segs">${sg}</div></div>
+<div class="${S.i!==null?'':'lock'}"><h2>٤. استوديو التحليل</h2><div class="glass">
+${S.i!==null?`<h3>${String(S.i+1).padStart(2,"0")} — ${SG[S.i][0]}</h3>`:""}
+<canvas id="cv"></canvas><div class="fb" id="fb">اضغط «ابدأ التسجيل» وردّد الجملة مع العدّ التنازلي</div>
+<div class="row"><button class="btn" onclick="listen()">▶ استمع للمؤذن</button><button class="btn" id="rb" onclick="toggleRec()">🎙 ابدأ التسجيل</button>
+<label class="note"><input type="checkbox" ${S.rel?'checked':''} onchange="S.rel=this.checked"> أغنّي بطبقتي أنا (قارِن الفروق النغمية فقط)</label></div>
+<div id="res"></div><p class="note">يُفضّل استخدام سماعات أذن. تُعالَج الطبقة داخل المتصفح ولا يُرسل أي صوت.</p></div></div>`}
+function goStudio(m,r){stopA();S.m=m;S.r=r||null;S.i=null;if(location.hash=="#/studio")render();else location.hash="#/studio"}
+function pick(k,v){stopA();S[k]=v;if(k=="m"){S.r=null;S.i=null}if(k=="r")S.i=null;render()}
+function seg(i){S.i=i;render();listen()}
+function listen(){stopA();au=new Audio(G().a);au.play()}
+
+/* ---------- الرسم ---------- */
+function draw(ph){const c=$("cv");if(!c||S.i===null)return;const g=G(),f=g.f,w=c.clientWidth,h=c.clientHeight,r=devicePixelRatio||1;
+if(c.width!=w*r){c.width=w*r;c.height=h*r}const x=c.getContext("2d");x.setTransform(r,0,0,r,0,0);x.clearRect(0,0,w,h);
+const v=f.filter(a=>a!==null),lo=Math.min(...v)-200,hi=Math.max(...v)+200,T=g.d,X=t=>12+t/T*(w-24),Y=a=>h-14-(a-lo)/(hi-lo)*(h-28),rr=R();
+if(rr.mq){x.strokeStyle="rgba(255,255,255,.08)";x.lineWidth=1;for(const d of MQ[rr.mq].c)for(let k=-3;k<5;k++){const a=rr.ton+d+1200*k;if(a>lo&&a<hi){x.beginPath();x.moveTo(0,Y(a));x.lineTo(w,Y(a));x.stroke()}}}
+x.lineCap=x.lineJoin="round";x.lineWidth=5;x.strokeStyle="#F59E0B";x.shadowColor="#F59E0B";x.shadowBlur=10;x.beginPath();let pen=false;
+f.forEach((a,i)=>{if(a===null){pen=false;return}pen?x.lineTo(X(i*H),Y(a)):x.moveTo(X(i*H),Y(a));pen=true});x.stroke();
+x.shadowColor="#38BDF8";x.fillStyle="#38BDF8";pts.forEach(p=>{x.beginPath();x.arc(X(p.t),Y(p.y),3.2,0,7);x.fill()});
+x.shadowBlur=0;if(ph!=null){x.strokeStyle="rgba(255,255,255,.5)";x.lineWidth=1;x.beginPath();x.moveTo(X(ph),0);x.lineTo(X(ph),h);x.stroke()}}
+
+/* ---------- التسجيل والتقييم ---------- */
+const fb=(c,t)=>{const e=$("fb");if(e){e.className="fb "+c;e.textContent=t}};
+const fold=a=>((a+600)%1200+1200)%1200-600;
+async function toggleRec(){if(rec){finish(true);return}
+let stream;try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}})}
+catch(e){fb("lo","تعذّر الوصول إلى الميكروفون. اسمح بالوصول من إعدادات المتصفح ثم أعد المحاولة (قد يُحجب داخل المعاينة المضمّنة).");return}
+stopA();const c=ctx();await c.resume();const an=c.createAnalyser();an.fftSize=2048;const src=c.createMediaStreamSource(stream),g=G(),T=g.d;src.connect(an);
+pts=[];$("res").innerHTML="";$("rb").textContent="⏹ إيقاف";rec={stream,src,run:false,tot:0,vo:0,sum:0,sm:0,dl:[],off:0};
+for(let k=3;k>0;k--){fb("",String(k));await new Promise(r=>setTimeout(r,650));if(!rec)return}
+fb("","غنِّ الآن…");rec.run=true;rec.t0=performance.now();const buf=new Float32Array(2048);
+(function loop(){if(!rec)return;const t=(performance.now()-rec.t0)/1000;if(t>T+.4){finish(false);return}
+an.getFloatTimeDomainData(buf);const f=yin(buf,c.sampleRate),i0=Math.floor(t/H),r0=g.f[i0];
+if(r0!=null){rec.tot++;if(f>0){const u0=1200*Math.log2(f/110),u=u0-(S.rel?rec.off:0);let d=1e9;
+for(let j=i0-5;j<=i0+5;j++){const q=g.f[j];if(q==null)continue;const e=fold(u-q);if(Math.abs(e)<Math.abs(d))d=e}
+if(S.rel){rec.dl.push(fold(u0-r0));if(rec.dl.length%8==1)rec.off=[...rec.dl].sort((a,b)=>a-b)[rec.dl.length>>1]}
+rec.vo++;rec.sum+=Math.max(0,1-Math.abs(d)/150);rec.sm=.65*rec.sm+.35*d;pts.push({t,y:r0+d});
+if(rec.sm<-35)fb("lo","🔴 زود شوية / ارفع الطبقة");else if(rec.sm>35)fb("hi","🔵 وطي شوية / انزل بالطبقة");else fb("ok","🟢 ممتاز، ركوز سليم!")}}
+draw(t);requestAnimationFrame(loop)})()}
+function finish(manual){const Q=rec;if(!Q)return;rec=null;Q.stream.getTracks().forEach(t=>t.stop());Q.src.disconnect();
+$("rb").textContent="🎙 ابدأ التسجيل";draw();if(manual&&!Q.run){fb("","");return}
+const cov=Q.tot?Q.vo/Q.tot:0,acc=Q.vo?Q.sum/Q.vo:0,sc=Math.round(acc*100*Math.min(1,cov/.7));
+fb("",sc>=85?"ما شاء الله! ركوز ممتاز":sc>=60?"جيد، ثبّت النغمة أكثر":"استمع للمؤذن وأعد المحاولة");
+$("res").innerHTML=`<div class="row"><div class="score">${sc}%</div><span>مطابقة المقام</span></div><div class="row"><button class="btn" onclick="render();listen()">↻ إعادة المحاولة</button>${S.i<13?`<button class="btn" onclick="seg(${S.i+1})">الشريحة التالية ←</button>`:""}</div>`}
+
+/* ---------- التوجيه ---------- */
+function render(){if(rec)finish(true);stopA();pts=[];const h=location.hash=="#/studio";
+$("n1").className=h?"":"on";$("n2").className=h?"on":"";$("app").innerHTML=h?studio():home();
+if(h)requestAnimationFrame(()=>draw())}
+addEventListener("hashchange",()=>{window.scrollTo(0,0);render()});addEventListener("resize",()=>!rec&&draw());fetch("data/recordings.json",{cache:"no-store"}).then(r=>r.json()).then(j=>{REC=j;render()}).catch(e=>{$("app").innerHTML='<p class="glass">تعذّر تحميل data/recordings.json — شغّل المشروع من داخل مجلد fajr-project عبر: python3 -m http.server 8000</p>'});
+</script>
+</body>
+</html>
