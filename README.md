@@ -56,3 +56,18 @@ Per-recording tuning options (pause bridging, manual split/merge of phrases, ton
 4. Reload the page: the riwaya cards unlock.
 
 The Quran studio compares pitch and rhythm only. It does not check tajweed or pronunciation.
+
+## Playback / recording speed (1x, 0.75x, 0.5x)
+
+Both studios have a speed selector above the pitch graph. It slows the reference audio **without changing its pitch**
+(`preservesPitch`) and stretches the recording timeline by the same factor, so a slow recitation is compared with the
+matching moment of the reference instead of a fast one. The choice is remembered between visits.
+While listening, a playhead moves across the graph so you can follow along.
+
+Internally the scorer works in "content time" (real seconds x speed). The scoring code sits between the
+`PURE-START` / `PURE-END` markers in `index.html` and is tested with a simulation:
+
+    node test/speed-sim.js
+
+The test simulates a reciter at 1x / 0.75x / 0.5x over all Quran ayat, checks that scores stay level across speeds,
+that a wrong melody still scores low, and that the old unscaled timeline would have scored a 0.5x recitation about 40 points lower.

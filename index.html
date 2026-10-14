@@ -35,6 +35,9 @@ p{line-height:1.9;color:var(--mu);margin:.3em 0}
 .seg{font:inherit;color:inherit;text-align:right;background:var(--gl);border:1px solid var(--bd);border-radius:14px;padding:10px 12px;cursor:pointer;display:flex;gap:8px;align-items:center}
 .seg i{font-style:normal;color:var(--go);font-weight:800}.seg.on{border-color:var(--cy);box-shadow:0 0 18px rgba(56,189,248,.4)}
 .lock{opacity:.45;pointer-events:none}
+.btn.on{border-color:var(--cy);background:rgba(56,189,248,.18);color:var(--cy)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.spd{min-width:64px}
 canvas{width:100%;height:260px;display:block;background:rgba(0,0,0,.28);border-radius:14px}
 .fb{margin:14px 0;min-height:56px;border-radius:14px;padding:14px;text-align:center;font-size:1.3rem;font-weight:800;border:1px solid var(--bd);transition:background .2s}
 .fb.hi{background:rgba(56,189,248,.18);border-color:var(--cy)}.fb.lo{background:rgba(239,68,68,.2);border-color:var(--lo)}.fb.ok{background:rgba(34,197,94,.2);border-color:var(--ok)}
@@ -94,7 +97,8 @@ hafs:{n:"حفص عن عاصم",im:"الإمام عاصم الكوفي",d:"روا
 warsh:{n:"ورش عن نافع",im:"الإمام نافع المدني",d:"الرواية الثانية عن الإمام نافع المدني، رواها ورش (عثمان بن سعيد المصري).",z:"تنتشر في المغرب والجزائر وتونس وموريتانيا وغرب إفريقيا."},
 duri:{n:"الدوري عن أبي عمرو البصري",im:"الإمام أبو عمرو البصري",d:"رواية حفص بن عمر الدوري عن الإمام أبي عمرو بن العلاء البصري.",z:"تنتشر في السودان وأجزاء من غرب إفريقيا."}};
 let REC=[],QREC=[],lastPage=null;
-const S={m:null,r:null,i:null,rel:true};
+const S={m:null,r:null,i:null,rel:true,sp:1};
+try{const v=+localStorage.getItem("sada.sp");if([1,.75,.5].includes(v))S.sp=v}catch(e){}
 let rec=null,pts=[],AC,cur,au;
 
 /* ---------- الصوت المرجعي (توليف) ---------- */
@@ -111,6 +115,7 @@ o.start(t0);l.start(t0);o.stop(t0+T+.05);l.stop(t0+T+.05);cur=o}
 function qsample(k){const r=QREC.find(x=>x.rw==k);if(!r)return;stopA();const a=au=new Audio(r.segs[0].a);a.play();setTimeout(()=>{if(au===a)a.pause()},7000)}
 function sample(k){const rr=REC.find(x=>x.mq==k);if(rr){stopA();const a=au=new Audio(rr.segs[0].a);a.currentTime=.1;a.play();setTimeout(()=>a.pause(),5000);return}const ns=[0,1,2,3,4,3,2,1,0].map((d,i)=>({d,t:i*.55,L:.55}));play(ns,146.83,k)}
 
+/*PURE-START (تُختبر في test/speed-sim.js)*/
 /* ---------- كشف الطبقة (YIN) ---------- */
 function yin(b,sr){let r=0;for(const v of b)r+=v*v;if(Math.sqrt(r/b.length)<.012)return 0;
 const n=b.length>>1,d=new Float32Array(n),cm=new Float32Array(n);
@@ -121,6 +126,18 @@ for(;t<n-1;t++)if(cm[t]<.14){while(t+1<n-1&&cm[t+1]<cm[t])t++;break}
 if(t>=n-1)return 0;
 const a=cm[t-1],bb=cm[t],c=cm[t+1],den=a-2*bb+c,sh=den?.5*(a-c)/den:0;
 return sr/(t+sh)}
+
+/* ---------- المقارنة والتقييم (t = زمن المحتوى بالثواني، أي زمن التسجيل الفعلي × السرعة) ---------- */
+const H=.04;
+const fold=a=>((a+600)%1200+1200)%1200-600;
+function frameErr(fr,i0,u){let d=1e9;for(let j=i0-5;j<=i0+5;j++){const q=fr[j];if(q==null)continue;const e=fold(u-q);if(Math.abs(e)<Math.abs(d))d=e}return d}
+function stepRec(Q,fr,tc,f,rel){const i0=Math.floor(tc/H),r0=fr[i0];if(r0==null)return null;Q.tot++;if(!(f>0))return null;
+const u0=1200*Math.log2(f/110),u=u0-(rel?Q.off:0),d=frameErr(fr,i0,u);
+if(rel){Q.dl.push(fold(u0-r0));if(Q.dl.length%8==1)Q.off=[...Q.dl].sort((a,b)=>a-b)[Q.dl.length>>1]}
+Q.vo++;Q.sum+=Math.max(0,1-Math.abs(d)/150);Q.sm=.65*Q.sm+.35*d;return{d,y:r0+d}}
+const newQ=()=>({tot:0,vo:0,sum:0,sm:0,dl:[],off:0});
+const scoreOf=Q=>{const cov=Q.tot?Q.vo/Q.tot:0,acc=Q.vo?Q.sum/Q.vo:0;return Math.round(acc*100*Math.min(1,cov/.7))};
+/*PURE-END*/
 
 /* ---------- الصفحة الأولى ---------- */
 function home(){
@@ -171,7 +188,7 @@ return `<section class="hero"><h1>صدى: تعلّم الأذان والقرآن
 <div class="glass"><b>مجاني وللجميع</b><p>للمؤذن المبتدئ ومتعلّم المقامات وطالب القراءات ومحبّ القرآن، دون حساب أو تثبيت.</p></div></div>`}
 
 /* ---------- الصفحة الثانية ---------- */
-const IQ=()=>location.hash=="#/quran",R=()=>(IQ()?QREC:REC).find(r=>r.id==S.r),G=()=>R().segs[S.i],H=.04;
+const IQ=()=>location.hash=="#/quran",R=()=>(IQ()?QREC:REC).find(r=>r.id==S.r),G=()=>R().segs[S.i];
 function studio(){
 const has=k=>REC.some(r=>r.mq==k);
 const mq=Object.entries(MQ).map(([k,v])=>`<button class="card ${S.m==k?'on':''} ${has(k)?'':'lock'}" onclick="pick('m','${k}')"><b>${v.n}</b><small>${has(k)?v.d:'لا يوجد تسجيل بعد'}</small></button>`).join("")+(REC.some(r=>!r.mq)?`<button class="card ${S.m=='?'?'on':''}" onclick="pick('m','?')"><b>مقام غير محدد</b><small>${REC.filter(r=>!r.mq).length} تسجيلات بانتظار تأكيد مقامها</small></button>`:"");
@@ -182,9 +199,16 @@ return `<h1 style="font-size:2.2rem">استوديو التدريب</h1>
 <div class="${S.m?'':'lock'}"><h2>٢. المؤذن</h2><div class="g">${rs}</div><p class="note">أسماء التسجيلات مأخوذة من بيانات الملفات الصوتية نفسها.</p></div>
 <div class="${S.r?'':'lock'}"><h2>٣. شرائح الأذان</h2><div class="segs">${sg}</div></div>
 ${panel(()=>`<h3>${String(S.i+1).padStart(2,"0")} — ${SG[S.i][0]}</h3>`)}`}
+const SPD=[[1,"1×"],[.75,"0.75×"],[.5,"0.5×"]];
+function spRow(){return `<div class="row" role="group" aria-label="${IQ()?"سرعة الاستماع والتلاوة":"سرعة الاستماع والتسجيل"}"><span class="note">السرعة:</span>${SPD.map(([v,l])=>`<button class="btn spd ${S.sp==v?'on':''}" data-v="${v}" aria-pressed="${S.sp==v}" onclick="setSp(${v})"><bdi dir="ltr">${l}</bdi></button>`).join("")}<span class="note" id="spn"></span></div>`}
+function spNote(){const e=$("spn");if(e)e.textContent=S.i!==null?`مدة ${IQ()?"الآية":"الجملة"} بهذه السرعة ≈ ${(G().d/S.sp).toFixed(1)} ث`:""}
+const lockSp=on=>document.querySelectorAll(".spd").forEach(b=>b.disabled=on);
+function setSp(v){if(rec)return;S.sp=v;try{localStorage.setItem("sada.sp",v)}catch(e){}
+document.querySelectorAll(".spd").forEach(b=>{const on=+b.dataset.v==v;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on)});
+if(au)rate(au);spNote()}
 function panel(head){return `<div class="${S.i!==null?'':'lock'}"><h2>٤. استوديو التحليل</h2><div class="glass">
 ${S.i!==null?head():""}
-<canvas id="cv"></canvas><div class="fb" id="fb">اضغط «ابدأ التسجيل» وردّد ${IQ()?"الآية":"الجملة"} مع العدّ التنازلي</div>
+${spRow()}<canvas id="cv"></canvas><div class="fb" id="fb">اضغط «ابدأ التسجيل» وردّد ${IQ()?"الآية":"الجملة"} مع العدّ التنازلي</div>
 <div class="row"><button class="btn" onclick="listen()">▶ استمع ${IQ()?"للقارئ":"للمؤذن"}</button><button class="btn" id="rb" onclick="toggleRec()">🎙 ابدأ التسجيل</button>
 <label class="note"><input type="checkbox" ${S.rel?'checked':''} onchange="S.rel=this.checked"> ${IQ()?"أقرأ":"أغنّي"} بطبقتي أنا (قارِن الفروق النغمية فقط)</label></div>
 <div id="res"></div><p class="note">يُفضّل استخدام سماعات أذن. تُعالَج الطبقة داخل المتصفح ولا يُرسل أي صوت.</p></div></div>`}
@@ -203,7 +227,9 @@ ${panel(()=>`<div class="ayah">${R().txt[S.i]}</div><p class="note" style="text-
 function goStudio(m,r,pg){pg=pg||"a";stopA();lastPage=pg;S.m=m;S.r=r||null;S.i=null;const t=pg=="q"?"#/quran":"#/studio";if(location.hash==t)render();else location.hash=t}
 function pick(k,v){stopA();S[k]=v;if(k=="m"){S.r=null;S.i=null}if(k=="r")S.i=null;render()}
 function seg(i){S.i=i;render();listen()}
-function listen(){stopA();au=new Audio(G().a);au.play()}
+function rate(a){a.preservesPitch=a.mozPreservesPitch=a.webkitPreservesPitch=true;a.defaultPlaybackRate=a.playbackRate=S.sp}
+function listen(){stopA();const a=au=new Audio(G().a);rate(a);a.play().catch(()=>{});
+(function tick(){if(au!==a||rec)return;draw(a.currentTime);if(!a.paused&&!a.ended)requestAnimationFrame(tick);else draw()})()}
 
 /* ---------- الرسم ---------- */
 function draw(ph){const c=$("cv");if(!c||S.i===null)return;const g=G(),f=g.f,w=c.clientWidth,h=c.clientHeight,r=devicePixelRatio||1;
@@ -217,25 +243,22 @@ x.shadowBlur=0;if(ph!=null){x.strokeStyle="rgba(255,255,255,.5)";x.lineWidth=1;x
 
 /* ---------- التسجيل والتقييم ---------- */
 const fb=(c,t)=>{const e=$("fb");if(e){e.className="fb "+c;e.textContent=t}};
-const fold=a=>((a+600)%1200+1200)%1200-600;
 async function toggleRec(){if(rec){finish(true);return}
 let stream;try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}})}
 catch(e){fb("lo","تعذّر الوصول إلى الميكروفون. اسمح بالوصول من إعدادات المتصفح ثم أعد المحاولة (قد يُحجب داخل المعاينة المضمّنة).");return}
-stopA();const c=ctx();await c.resume();const an=c.createAnalyser();an.fftSize=2048;const src=c.createMediaStreamSource(stream),g=G(),T=g.d;src.connect(an);
-pts=[];$("res").innerHTML="";$("rb").textContent="⏹ إيقاف";rec={stream,src,run:false,tot:0,vo:0,sum:0,sm:0,dl:[],off:0};
+stopA();const c=ctx();await c.resume();const an=c.createAnalyser();an.fftSize=2048;const src=c.createMediaStreamSource(stream),g=G(),T=g.d,sp=S.sp;src.connect(an);
+pts=[];$("res").innerHTML="";$("rb").textContent="⏹ إيقاف";lockSp(true);rec=Object.assign(newQ(),{stream,src,run:false});
 for(let k=3;k>0;k--){fb("",String(k));await new Promise(r=>setTimeout(r,650));if(!rec)return}
 fb("",IQ()?"اقرأ الآن…":"غنِّ الآن…");rec.run=true;rec.t0=performance.now();const buf=new Float32Array(2048);
-(function loop(){if(!rec)return;const t=(performance.now()-rec.t0)/1000;if(t>T+.4){finish(false);return}
-an.getFloatTimeDomainData(buf);const f=yin(buf,c.sampleRate),i0=Math.floor(t/H),r0=g.f[i0];
-if(r0!=null){rec.tot++;if(f>0){const u0=1200*Math.log2(f/110),u=u0-(S.rel?rec.off:0);let d=1e9;
-for(let j=i0-5;j<=i0+5;j++){const q=g.f[j];if(q==null)continue;const e=fold(u-q);if(Math.abs(e)<Math.abs(d))d=e}
-if(S.rel){rec.dl.push(fold(u0-r0));if(rec.dl.length%8==1)rec.off=[...rec.dl].sort((a,b)=>a-b)[rec.dl.length>>1]}
-rec.vo++;rec.sum+=Math.max(0,1-Math.abs(d)/150);rec.sm=.65*rec.sm+.35*d;pts.push({t,y:r0+d});
-if(rec.sm<-35)fb("lo","🔴 زود شوية / ارفع الطبقة");else if(rec.sm>35)fb("hi","🔵 وطي شوية / انزل بالطبقة");else fb("ok","🟢 ممتاز، ركوز سليم!")}}
-draw(t);requestAnimationFrame(loop)})()}
-function finish(manual){const Q=rec;if(!Q)return;rec=null;Q.stream.getTracks().forEach(t=>t.stop());Q.src.disconnect();
+/* الزمن الفعلي × السرعة = زمن المحتوى: عند 0.5× تمتد الآية إلى ضعف مدتها، فيُقارَن صوتك بالموضع الصحيح من اللحن */
+(function loop(){if(!rec)return;const tc=(performance.now()-rec.t0)/1000*sp;if(tc>T+.4){finish(false);return}
+an.getFloatTimeDomainData(buf);const o=stepRec(rec,g.f,tc,yin(buf,c.sampleRate),S.rel);
+if(o){pts.push({t:tc,y:o.y});
+if(rec.sm<-35)fb("lo","🔴 زود شوية / ارفع الطبقة");else if(rec.sm>35)fb("hi","🔵 وطي شوية / انزل بالطبقة");else fb("ok","🟢 ممتاز، ركوز سليم!")}
+draw(tc);requestAnimationFrame(loop)})()}
+function finish(manual){const Q=rec;if(!Q)return;rec=null;Q.stream.getTracks().forEach(t=>t.stop());Q.src.disconnect();lockSp(false);
 $("rb").textContent="🎙 ابدأ التسجيل";draw();if(manual&&!Q.run){fb("","");return}
-const cov=Q.tot?Q.vo/Q.tot:0,acc=Q.vo?Q.sum/Q.vo:0,sc=Math.round(acc*100*Math.min(1,cov/.7));
+const sc=scoreOf(Q);
 fb("",sc>=85?"ما شاء الله! ركوز ممتاز":sc>=60?"جيد، ثبّت النغمة أكثر":"استمع للمؤذن وأعد المحاولة");
 $("res").innerHTML=`<div class="row"><div class="score">${sc}%</div><span>${IQ()?"مطابقة لحن القارئ":"مطابقة المقام"}</span></div><div class="row"><button class="btn" onclick="render();listen()">↻ إعادة المحاولة</button>${S.i<R().segs.length-1?`<button class="btn" onclick="seg(${S.i+1})">${IQ()?"الآية":"الشريحة"} التالية ←</button>`:""}</div>`}
 
@@ -243,7 +266,7 @@ $("res").innerHTML=`<div class="row"><div class="score">${sc}%</div><span>${IQ()
 function render(){if(rec)finish(true);stopA();pts=[];const h=location.hash,pg=h=="#/studio"?"a":h=="#/quran"?"q":"h";
 if(pg!=lastPage){if(lastPage!==null)S.m=S.r=S.i=null;lastPage=pg}
 ["h","a","q"].forEach((k,n)=>$("n"+(n+1)).className=k==pg?"on":"");
-$("app").innerHTML=pg=="a"?studio():pg=="q"?quran():home();
+$("app").innerHTML=pg=="a"?studio():pg=="q"?quran():home();spNote();
 if(pg!="h")requestAnimationFrame(()=>draw())}
 addEventListener("hashchange",()=>{window.scrollTo(0,0);render()});addEventListener("resize",()=>!rec&&draw());Promise.all([fetch("data/recordings.json",{cache:"no-store"}).then(r=>r.json()),fetch("data/quran.json",{cache:"no-store"}).then(r=>r.json()).catch(()=>[])]).then(([a,q])=>{REC=a;QREC=q;render()}).catch(e=>{$("app").innerHTML='<p class="glass">تعذّر تحميل data/recordings.json — شغّل المشروع من داخل مجلد fajr-project عبر: python3 -m http.server 8000</p>'});
 </script>
