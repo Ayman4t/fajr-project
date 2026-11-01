@@ -1,2 +1,4 @@
 User-agent: *
 Allow: /
+
+Sitemap: https://taleem-azan-fajr.aymanstack.com/sitemap.xml
