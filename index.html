@@ -283,8 +283,8 @@ return `<section class="pg"><h1>تواصل معنا</h1><p class="lead">يسعد
 async function sendMsg(e){e.preventDefault();const f=e.target,o=$("cm"),b=f.querySelector("button");
 b.disabled=true;o.textContent="جارٍ الإرسال…";
 try{const r=await fetch("https://formsubmit.co/ajax/"+CONTACT.email,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({name:f.n.value,email:f.e.value,topic:f.t.value,message:f.m.value,_subject:"صدى — "+f.t.value})});
-const j=await r.json();if(!r.ok||j.success==="false")throw 0;f.reset();o.textContent="وصلتنا رسالتك، شكراً لك."}
-catch(x){o.textContent="تعذّر الإرسال. حاول مرة أخرى بعد قليل."}
+const j=await r.json().catch(()=>({}));if(!r.ok||j.success==="false"||j.success===false)throw j.message||0;f.reset();o.textContent="وصلتنا رسالتك، شكراً لك."}
+catch(x){o.textContent="تعذّر الإرسال"+(typeof x=="string"?" ("+x+")":"")+". ";const a=document.createElement("a");a.href=`mailto:${CONTACT.email}?subject=${encodeURIComponent("صدى — "+f.t.value)}&body=${encodeURIComponent(f.m.value)}`;a.textContent="أرسلها عبر تطبيق البريد";a.style.color="var(--go)";o.appendChild(a)}
 b.disabled=false}
 
 /* ---------- التوجيه ---------- */
