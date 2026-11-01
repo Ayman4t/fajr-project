@@ -6,6 +6,11 @@
 <title>صدى — تعلّم الأذان والقرآن بالمحاكاة</title>
 <meta name="description" content="صدى: موقع مجاني لتعلّم الأذان بالمقامات وتلاوة سورة الفاتحة بأربع روايات عبر المحاكاة والمقارنة الصوتية.">
 <meta name="theme-color" content="#0F1330">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="صدى">
+<meta property="og:locale" content="ar_AR">
+<meta name="twitter:card" content="summary">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%232D2766'/%3E%3Cstop offset='.6' stop-color='%238B4A70'/%3E%3Cstop offset='1' stop-color='%23E58A5F'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='15' fill='url(%23g)'/%3E%3Ccircle cx='32' cy='30' r='13' fill='%23FBD38D'/%3E%3Cg fill='%230F1330'%3E%3Crect x='11' y='42' width='7' height='12' rx='3.5'/%3E%3Crect x='21' y='36' width='7' height='18' rx='3.5'/%3E%3Crect x='30.5' y='32' width='7' height='22' rx='3.5'/%3E%3Crect x='40' y='38' width='7' height='16' rx='3.5'/%3E%3Crect x='49' y='44' width='6' height='10' rx='3'/%3E%3C/g%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Aref+Ruqaa:wght@700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -74,6 +79,7 @@ footer b{color:var(--go)}footer a{color:var(--mu);text-decoration:none;margin-in
 <div class="wrap">
 <nav><b>صدى <span>الأذان والقرآن</span></b><div><a href="#/" id="n1">الرئيسية</a><a href="#/studio" id="n2">تعلّم الأذان</a><a href="#/quran" id="n3">تعلّم القرآن</a><a href="#/about" id="n4">من نحن</a><a href="#/contact" id="n5">تواصل معنا</a></div></nav>
 <main id="app"></main>
+<noscript><p style="padding:40px 0">صدى: موقع مجاني لتعلّم الأذان بثمانية مقامات وتلاوة سورة الفاتحة بأربع روايات. يحتاج الموقع إلى تفعيل JavaScript ليعمل.</p></noscript>
 <footer><div><span class="fb2">صدى</span><br><span class="note">تعلّم الأذان والقرآن بالمحاكاة</span></div><div><a href="#/studio">الأذان</a><a href="#/quran">القرآن</a><a href="#/about">من نحن</a><a href="#/contact">تواصل معنا</a></div><div>صُنع بواسطة <b>aymanstack</b></div></footer>
 </div>
 <script>
@@ -287,12 +293,21 @@ const j=await r.json().catch(()=>({}));if(!r.ok||j.success==="false"||j.success=
 catch(x){o.textContent="تعذّر الإرسال"+(typeof x=="string"?" ("+x+")":"")+". ";const a=document.createElement("a");a.href=`mailto:${CONTACT.email}?subject=${encodeURIComponent("صدى — "+f.t.value)}&body=${encodeURIComponent(f.m.value)}`;a.textContent="أرسلها عبر تطبيق البريد";a.style.color="var(--go)";o.appendChild(a)}
 b.disabled=false}
 
+/* ---------- SEO ---------- */
+const SEO={h:["صدى — تعلّم الأذان والقرآن بالمحاكاة","موقع مجاني لتعلّم الأذان بثمانية مقامات وتلاوة سورة الفاتحة بأربع روايات، بمقارنة صوتك بصوت المؤذن أو القارئ لحظةً بلحظة."],a:["تعلّم الأذان بالمقامات — صدى","تدرّب على الأذان في ثمانية مقامات، بتقسيم كل أذان إلى 14 شريحة، وقارن طبقة صوتك بصوت المؤذن فوراً."],q:["تعلّم القرآن بأربع روايات — صدى","تدرّب على سورة الفاتحة بروايات قالون وحفص وورش والدوري بتلاوة الشيخ الحصري، وقارن لحنك وإيقاعك."],ab:["من نحن — صدى","تعرّف على مشروع صدى ومبادئه ومصادر تسجيلاته."],ct:["تواصل معنا — صدى","راسلنا باقتراح أو بلاغ عن خطأ أو تسجيل تودّ إضافته إلى صدى."]};
+function seo(pg){const[t,d]=SEO[pg],base=location.origin+location.pathname;
+const m=(a,n,c)=>{let e=document.head.querySelector(`meta[${a}="${n}"]`);if(!e){e=document.createElement("meta");e.setAttribute(a,n);document.head.appendChild(e)}e.content=c};
+document.title=t;m("name","description",d);m("property","og:title",t);m("property","og:description",d);m("property","og:url",base+location.hash);m("name","twitter:title",t);m("name","twitter:description",d);
+let l=document.head.querySelector("link[rel=canonical]");if(!l){l=document.createElement("link");l.rel="canonical";document.head.appendChild(l)}l.href=base;
+let j=$("ld");if(!j){j=document.createElement("script");j.id="ld";j.type="application/ld+json";document.head.appendChild(j)}
+j.textContent=JSON.stringify({"@context":"https://schema.org","@type":"WebSite",name:"صدى",url:base,inLanguage:"ar",description:SEO.h[1]})}
+
 /* ---------- التوجيه ---------- */
 function render(){if(rec)finish(true);stopA();pts=[];const h=location.hash,pg=h=="#/studio"?"a":h=="#/quran"?"q":h=="#/about"?"ab":h=="#/contact"?"ct":"h";
 if(pg!=lastPage){if(lastPage!==null)S.m=S.r=S.i=null;lastPage=pg}
 ["h","a","q","ab","ct"].forEach((k,n)=>$("n"+(n+1)).className=k==pg?"on":"");
 $("app").innerHTML=pg=="a"?studio():pg=="q"?quran():pg=="ab"?about():pg=="ct"?contact():home();spNote();
-if(pg=="a"||pg=="q")requestAnimationFrame(()=>draw())}
+if(pg=="a"||pg=="q")requestAnimationFrame(()=>draw());seo(pg)}
 addEventListener("hashchange",()=>{window.scrollTo(0,0);render()});addEventListener("resize",()=>!rec&&draw());Promise.all([fetch("data/recordings.json",{cache:"no-store"}).then(r=>r.json()),fetch("data/quran.json",{cache:"no-store"}).then(r=>r.json()).catch(()=>[])]).then(([a,q])=>{REC=a;QREC=q;render()}).catch(e=>{$("app").innerHTML='<p class="glass">تعذّر تحميل data/recordings.json — شغّل المشروع من داخل مجلد fajr-project عبر: python3 -m http.server 8000</p>'});
 </script>
 </body>
