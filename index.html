@@ -278,10 +278,14 @@ function about(){return `<section class="pg"><h1>من نحن</h1><p class="lead"
 <div class="row" style="margin-top:28px"><a class="cta" href="#/contact">شاركنا ملاحظتك</a><a class="btn" href="#/studio">ابدأ التدرّب</a></div>`}
 function contact(){const L=CONTACT.links.map(([n,u])=>`<a class="btn" href="${u}" target="_blank" rel="noopener">${n}</a>`).join("");
 return `<section class="pg"><h1>تواصل معنا</h1><p class="lead">يسعدنا أن نسمع منك: اقتراح أو بلاغ عن خطأ أو تسجيل تودّ إضافته.</p></section>
-<div class="two" style="margin-top:26px"><form class="glass" onsubmit="sendMsg(event)"><label for="cn">الاسم</label><input id="cn" name="n" required autocomplete="name"><label for="ct">الموضوع</label><select id="ct" name="t"><option>اقتراح</option><option>بلاغ عن خطأ</option><option>إضافة مؤذن أو قارئ</option><option>تعاون</option></select><label for="cm2">رسالتك</label><textarea id="cm2" name="m" required></textarea><div class="row"><button class="cta" type="submit">إرسال الرسالة</button></div><p class="note" id="cm" role="status"></p></form>
+<div class="two" style="margin-top:26px"><form class="glass" onsubmit="sendMsg(event)"><label for="cn">الاسم</label><input id="cn" name="n" required autocomplete="name"><label for="ce">بريدك للرد عليك (اختياري)</label><input id="ce" name="e" type="email" autocomplete="email" dir="ltr"><label for="ct">الموضوع</label><select id="ct" name="t"><option>اقتراح</option><option>بلاغ عن خطأ</option><option>إضافة مؤذن أو قارئ</option><option>تعاون</option></select><label for="cm2">رسالتك</label><textarea id="cm2" name="m" required></textarea><div class="row"><button class="cta" type="submit">إرسال الرسالة</button></div><p class="note" id="cm" role="status"></p></form>
 <div><div class="glass"><h3>ما الذي نحتاج مساعدتك فيه؟</h3><ul class="cr"><li>هل تعرف اسم مؤذن في أحد التسجيلات التي لم يُذكر صاحبها؟</li><li>هل سمعتَ خطأً في تصنيف مقام، خصوصاً العجم والكرد؟</li><li>هل تملك تسجيلاً متقناً يصلح لإضافته؟</li></ul></div>${L?`<div class="row" style="margin-top:14px">${L}</div>`:""}</div></div>`}
-function sendMsg(e){e.preventDefault();const f=e.target,o=$("cm");if(!CONTACT.email){o.textContent="نموذج المراسلة غير مفعّل بعد، يُرجى المحاولة لاحقاً.";return}
-location.href=`mailto:${CONTACT.email}?subject=${encodeURIComponent("صدى — "+f.t.value)}&body=${encodeURIComponent(f.m.value+"\n\n— "+f.n.value)}`;o.textContent="فُتح تطبيق البريد لإرسال رسالتك."}
+async function sendMsg(e){e.preventDefault();const f=e.target,o=$("cm"),b=f.querySelector("button");
+b.disabled=true;o.textContent="جارٍ الإرسال…";
+try{const r=await fetch("https://formsubmit.co/ajax/"+CONTACT.email,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({name:f.n.value,email:f.e.value,topic:f.t.value,message:f.m.value,_subject:"صدى — "+f.t.value})});
+const j=await r.json();if(!r.ok||j.success==="false")throw 0;f.reset();o.textContent="وصلتنا رسالتك، شكراً لك."}
+catch(x){o.textContent="تعذّر الإرسال. حاول مرة أخرى بعد قليل."}
+b.disabled=false}
 
 /* ---------- التوجيه ---------- */
 function render(){if(rec)finish(true);stopA();pts=[];const h=location.hash,pg=h=="#/studio"?"a":h=="#/quran"?"q":h=="#/about"?"ab":h=="#/contact"?"ct":"h";
