@@ -263,17 +263,20 @@ stopA();const c=ctx();await c.resume();const an=c.createAnalyser();an.fftSize=20
 pts=[];$("res").innerHTML="";$("rb").textContent="⏹ إيقاف";lockSp(true);rec=Object.assign(newQ(),{stream,src,run:false});
 for(let k=3;k>0;k--){fb("",String(k));await new Promise(r=>setTimeout(r,650));if(!rec)return}
 fb("",IQ()?"اقرأ الآن…":"غنِّ الآن…");rec.run=true;rec.t0=performance.now();const buf=new Float32Array(2048);
+try{const Q0=rec,mr=new MediaRecorder(stream),ch=[],nm=`sada-${IQ()?"quran":"adhan"}-${S.i+1}`;mr.ondataavailable=e=>{if(e.data.size)ch.push(e.data)};mr.onstop=()=>{if(ch.length)showDl(new Blob(ch,{type:mr.mimeType||"audio/webm"}),nm)};mr.start();Q0.mr=mr}catch(e){}
 /* الزمن الفعلي × السرعة = زمن المحتوى: عند 0.5× تمتد الآية إلى ضعف مدتها، فيُقارَن صوتك بالموضع الصحيح من اللحن */
 (function loop(){if(!rec)return;const tc=(performance.now()-rec.t0)/1000*sp;if(tc>T+.4){finish(false);return}
 an.getFloatTimeDomainData(buf);const o=stepRec(rec,g.f,tc,yin(buf,c.sampleRate),S.rel);
 if(o){pts.push({t:tc,y:o.y});
 if(rec.sm<-35)fb("lo","🔴 زود شوية / ارفع الطبقة");else if(rec.sm>35)fb("hi","🔵 وطي شوية / انزل بالطبقة");else fb("ok","🟢 ممتاز، ركوز سليم!")}
 draw(tc);requestAnimationFrame(loop)})()}
-function finish(manual){const Q=rec;if(!Q)return;rec=null;Q.stream.getTracks().forEach(t=>t.stop());Q.src.disconnect();lockSp(false);
+let dlUrl;
+function showDl(b,nm){const a=$("dl");if(!a)return;if(dlUrl)URL.revokeObjectURL(dlUrl);dlUrl=URL.createObjectURL(b);const t=b.type||"";a.href=dlUrl;a.download=nm+"."+(/mp4/.test(t)?"m4a":/ogg/.test(t)?"ogg":"webm");a.hidden=false}
+function finish(manual){const Q=rec;if(!Q)return;rec=null;try{if(Q.mr&&Q.mr.state!=="inactive")Q.mr.stop()}catch(e){}Q.stream.getTracks().forEach(t=>t.stop());Q.src.disconnect();lockSp(false);
 $("rb").textContent="🎙 ابدأ التسجيل";draw();if(manual&&!Q.run){fb("","");return}
 const sc=scoreOf(Q);
 fb("",sc>=85?"ما شاء الله! ركوز ممتاز":sc>=60?"جيد، ثبّت النغمة أكثر":"استمع للمؤذن وأعد المحاولة");
-$("res").innerHTML=`<div class="row"><div class="score">${sc}%</div><span>${IQ()?"مطابقة لحن القارئ":"مطابقة المقام"}</span></div><div class="row"><button class="btn" onclick="render();listen()">↻ إعادة المحاولة</button>${S.i<R().segs.length-1?`<button class="btn" onclick="seg(${S.i+1})">${IQ()?"الآية":"الشريحة"} التالية ←</button>`:""}</div>`}
+$("res").innerHTML=`<div class="row"><div class="score">${sc}%</div><span>${IQ()?"مطابقة لحن القارئ":"مطابقة المقام"}</span></div><div class="row"><a class="btn" id="dl" hidden>⬇ تحميل تسجيلي</a><button class="btn" onclick="render();listen()">↻ إعادة المحاولة</button>${S.i<R().segs.length-1?`<button class="btn" onclick="seg(${S.i+1})">${IQ()?"الآية":"الشريحة"} التالية ←</button>`:""}</div>`}
 
 /* ---------- من نحن / تواصل معنا ---------- */
 const CONTACT={email:"salemaymen814@gmail.com",links:[]}; /* ضع بريدك في email وروابط حساباتك في links مثل ["يوتيوب","https://..."] */
