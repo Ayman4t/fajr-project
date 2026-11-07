@@ -245,7 +245,7 @@ function goStudio(m,r,pg){pg=pg||"a";stopA();lastPage=pg;S.m=m;S.r=r||null;S.i=n
 function pick(k,v){stopA();S[k]=v;if(k=="m"){S.r=null;S.i=null}if(k=="r")S.i=null;render()}
 async function seg(i){S.i=i;render();const L=R().segs[i];
 if(S.r=="live"&&!L.f){fb("","جارٍ جلب الآية وتحليل لحنها…");
-try{await analyze(i)}catch(e){if(S.i===i)fb("lo","تعذّر تحليل صوت هذه الآية داخل المتصفح (قد يمنع خادم الصوت ذلك). يمكنك الاستماع فقط.")}
+try{await analyze(i)}catch(e){console.warn(e);if(S.i===i)fb("lo","تعذّر جلب الصوت لتحليل اللحن: "+(e&&e.message||e)+" — يمكنك الاستماع فقط.")}
 if(S.i!==i)return;if(L.f){render()}}
 listen()}
 /* ---------- وضع الـ API: أي سورة من القرآن (تلاوة الحصري برواية حفص من Al-Quran Cloud) ---------- */
@@ -255,11 +255,16 @@ function surOpts(){return (SUR.length?SUR:Array.from({length:114},(_,i)=>({numbe
 fetch("https://api.alquran.cloud/v1/surah").then(r=>r.json()).then(j=>{SUR=j.data||[];const e=$("lsur");if(e){const v=e.value;e.innerHTML=surOpts();e.value=v}}).catch(()=>{});
 async function loadLive(){const m=$("lmsg"),n=+$("lsur").value;m.textContent="جارٍ تحميل السورة…";
 try{const r=await fetch(`https://api.alquran.cloud/v1/surah/${n}/ar.husary`),j=await r.json();if(!r.ok||!j.data||!j.data.ayahs)throw 0;const d=j.data;stopA();
-LIVE={id:"live",n:"الشيخ الحصري (من الـ API)",t:d.name,rw:"hafs",txt:d.ayahs.map(a=>stripBsm(a.text,n,a.numberInSurah)),segs:d.ayahs.map(a=>({a:a.audio,d:null,f:null}))};
+LIVE={id:"live",n:"الشيخ الحصري (من الـ API)",t:d.name,rw:"hafs",txt:d.ayahs.map(a=>stripBsm(a.text,n,a.numberInSurah)),segs:d.ayahs.map(a=>{const k=p3(n)+p3(a.numberInSurah);return{a:a.audio,d:null,f:null,u:[...(AUDIO_PROXY?[AUDIO_PROXY+encodeURIComponent(a.audio)]:[]),a.audio,`https://everyayah.com/data/Husary_128kbps/${k}.mp3`,`https://verses.quran.foundation/Husary/mp3/${k}.mp3`]}})};
 S.ln=n;S.m=null;S.r="live";S.i=null;render();const m2=$("lmsg");if(m2)m2.textContent=`تم تحميل ${d.name}: ${d.ayahs.length} آية. اختر آية من القائمة أدناه.`}
 catch(e){m.textContent="تعذّر تحميل السورة من الـ API. تحقق من اتصالك ثم أعد المحاولة."}}
 /* يجلب صوت الآية ويستخرج خط اللحن بالمتصفح (نفس YIN، بعد خفض معدل العيّنة ×4 للسرعة) */
-async function analyze(i){const s=LIVE.segs[i],c=ctx(),buf=await c.decodeAudioData(await(await fetch(s.a)).arrayBuffer());
+/* لو لم يسمح أي مصدر بالقراءة من المتصفح (CORS) ضع هنا رابط وسيط خاص بك، مثل "https://your-worker.workers.dev/?u=" */
+const AUDIO_PROXY="",p3=x=>String(x).padStart(3,"0");
+async function analyze(i){const s=LIVE.segs[i],c=ctx();let buf,err;
+/* يجرّب المصادر بالترتيب، ويشغّل نفس الملف الذي حُلّل حتى يتطابق اللحن مع الصوت */
+for(const u of s.u){try{const r=await fetch(u,{mode:"cors"});if(!r.ok)throw new Error("HTTP "+r.status);buf=await c.decodeAudioData(await r.arrayBuffer());s.a=u;break}catch(e){err=e;console.warn("مصدر صوت فشل:",u,e)}}
+if(!buf)throw new Error("لم يسمح أي مصدر بقراءة الصوت داخل المتصفح ("+(err&&err.message||err)+")");
 const ch=buf.getChannelData(0),k=4,sr2=buf.sampleRate/k,n=Math.floor(ch.length/k),x=new Float32Array(n);
 for(let j=0;j<n;j++){let t=0;for(let q=0;q<k;q++)t+=ch[j*k+q];x[j]=t/k}
 const W=512,hop=Math.max(1,Math.round(H*sr2)),f=[];
