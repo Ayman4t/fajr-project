@@ -71,3 +71,16 @@ Internally the scorer works in "content time" (real seconds x speed). The scorin
 
 The test simulates a reciter at 1x / 0.75x / 0.5x over all Quran ayat, checks that scores stay level across speeds,
 that a wrong melody still scores low, and that the old unscaled timeline would have scored a 0.5x recitation about 40 points lower.
+
+## Repeat listening (1x, 3x, 5x, infinite)
+
+Both studios (adhan phrases and Quran ayat) have a repeat selector under the speed selector. "Listen" plays the selected
+phrase / ayah, waits one second (`RPGAP` in `index.html`), and plays it again until the chosen count is reached.
+With the infinity option it keeps going until you press "Stop listening", pick another phrase, or start recording.
+A counter next to the selector shows "تكرار 2 من 5". The default is 1x (no repeat) and the choice is remembered
+between visits (`localStorage` key `sada.rp`). Changing the speed during a loop applies from the next repeat.
+
+    node test/repeat-sim.js
+
+The test loads the real inline script with a fake `Audio`, fake timers and a fake DOM, and checks the count, the pause,
+stop / switch / new-listen cancellation, and that no repeat starts during a recording.

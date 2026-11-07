@@ -47,7 +47,7 @@ p{line-height:1.95;color:var(--mu);margin:.3em 0}
 .seg i{font-style:normal;color:var(--go);font-weight:700}.seg.on{border-color:var(--cy);background:var(--sf2)}
 .lock{opacity:.4;pointer-events:none}
 .btn.on{border-color:var(--cy);background:rgba(56,189,248,.16);color:var(--cy)}
-.btn:disabled{opacity:.45;cursor:not-allowed}.spd{min-width:64px}
+.btn:disabled{opacity:.45;cursor:not-allowed}.spd{min-width:64px}.rpb{min-width:56px}
 canvas{width:100%;height:260px;display:block;background:#0B0E26;border-radius:12px}
 .fb{margin:14px 0;min-height:56px;border-radius:12px;padding:14px;text-align:center;font-size:1.25rem;font-weight:700;border:1px solid var(--bd);transition:background .2s}
 .fb.hi{background:rgba(56,189,248,.16);border-color:var(--cy)}.fb.lo{background:rgba(248,113,113,.16);border-color:var(--lo)}.fb.ok{background:rgba(74,222,128,.16);border-color:var(--ok)}
@@ -110,13 +110,16 @@ hafs:{n:"حفص عن عاصم",im:"الإمام عاصم الكوفي",d:"روا
 warsh:{n:"ورش عن نافع",im:"الإمام نافع المدني",d:"الرواية الثانية عن الإمام نافع المدني، رواها ورش (عثمان بن سعيد المصري).",z:"تنتشر في المغرب والجزائر وتونس وموريتانيا وغرب إفريقيا."},
 duri:{n:"الدوري عن أبي عمرو البصري",im:"الإمام أبو عمرو البصري",d:"رواية حفص بن عمر الدوري عن الإمام أبي عمرو بن العلاء البصري.",z:"تنتشر في السودان وأجزاء من غرب إفريقيا."}};
 let REC=[],QREC=[],lastPage=null;
-const S={m:null,r:null,i:null,rel:true,sp:1};
+const S={m:null,r:null,i:null,rel:true,sp:1,rp:1};
 try{const v=+localStorage.getItem("sada.sp");if([1,.75,.5].includes(v))S.sp=v}catch(e){}
-let rec=null,pts=[],AC,cur,au;
+/* التكرار: 1 = مرة واحدة، 3 و5 = عدد المرات، 0 = بلا توقف حتى تضغط «إيقاف» */
+try{const v=localStorage.getItem("sada.rp");if(["1","3","5","0"].includes(v))S.rp=+v}catch(e){}
+const RPGAP=1000;
+let rec=null,pts=[],AC,cur,au,LT=0,rpN=0;
 
 /* ---------- الصوت المرجعي (توليف) ---------- */
 const ctx=()=>AC||(AC=new(window.AudioContext||window.webkitAudioContext)());
-const stopA=()=>{try{cur&&cur.stop()}catch(e){}cur=0;if(au){au.pause();au=null}};
+const stopA=()=>{LT++;rpN=0;rpNote("");try{cur&&cur.stop()}catch(e){}cur=0;if(au){au.pause();au=null}};
 const hzOf=(m,d,tn)=>tn*2**(MQ[m].c[d]/1200);
 function play(ns,tn,m){stopA();const c=ctx();c.resume();const t0=c.currentTime+.05,e=ns[ns.length-1],T=e.t+e.L;
 const o=c.createOscillator(),f=c.createBiquadFilter(),g=c.createGain(),l=c.createOscillator(),lg=c.createGain();
@@ -179,7 +182,7 @@ return `<section class="hero"><h1>صدى: تعلّم الأذان والقرآن
 <div class="g info">${Object.entries(MQ).map(([k,v])=>{const r=REC.find(x=>x.mq==k);return `<div class="glass"><div class="hd"><h3>${v.n}</h3><span class="tag">${v.d}</span></div><p>${INFO[k][0]}</p><p class="note">الأنسب: ${INFO[k][1]}</p><div class="steps-line">${v.c.join(" · ")}</div>${r?`<p class="note">تسجيل المقام: ${r.n}</p>`:""}</div>`}).join("")}</div>
 <h2>كيف يعمل تعلّم الأذان؟</h2><div class="steps">
 <div class="glass"><h3>اختر المقام والمؤذن</h3><p>حدّد المقام ثم التسجيل الذي تريد التدريب عليه.</p></div><em>←</em>
-<div class="glass"><h3>تدرّب شريحة بشريحة</h3><p>الأذان مقسّم إلى 14 شريحة، استمع لكل منها ثم أعدها بصوتك.</p></div><em>←</em>
+<div class="glass"><h3>تدرّب شريحة بشريحة</h3><p>الأذان مقسّم إلى 14 شريحة، استمع لكل منها (ويمكنك تكرارها 3 أو 5 مرات أو بلا توقف) ثم أعدها بصوتك.</p></div><em>←</em>
 <div class="glass"><h3>تلقَّ تصحيحاً لحظياً</h3><p>تعرف فوراً هل صوتك أعلى أو أخفض أو على النغمة تماماً.</p></div></div>
 
 <h2 class="band">📖 تعلّم القرآن</h2>
@@ -188,7 +191,7 @@ return `<section class="hero"><h1>صدى: تعلّم الأذان والقرآن
 <h2>تصنيف تسجيلات القرآن</h2><p>كل تسجيل مصنَّف باسم القارئ والرواية.</p>${qlib}
 <h2>كيف يعمل تعلّم القرآن؟</h2><div class="steps">
 <div class="glass"><h3>اختر الرواية والقارئ</h3><p>قالون أو حفص أو ورش أو الدوري، ثم التسجيل الذي تريده.</p></div><em>←</em>
-<div class="glass"><h3>تدرّب آيةً آية</h3><p>السورة مقسّمة إلى 7 آيات، استمع لكل آية ثم أعدها بصوتك.</p></div><em>←</em>
+<div class="glass"><h3>تدرّب آيةً آية</h3><p>السورة مقسّمة إلى 7 آيات، استمع لكل آية (ويمكنك تكرارها 3 أو 5 مرات أو بلا توقف) ثم أعدها بصوتك.</p></div><em>←</em>
 <div class="glass"><h3>قارن لحنك وإيقاعك</h3><p>ترى خط صوتك فوق خط القارئ وتحصل على نسبة المطابقة.</p></div></div>
 <div class="warn"><b>تنبيه:</b> يقارن الموقع طبقة الصوت وإيقاعه فقط، ولا يُصحّح أحكام التجويد ولا مخارج الحروف. هو معينٌ لك على التدرّب وليس بديلاً عن التلقّي من شيخ مُجاز.</div>
 
@@ -221,8 +224,8 @@ document.querySelectorAll(".spd").forEach(b=>{const on=+b.dataset.v==v;b.classLi
 if(au)rate(au);spNote()}
 function panel(head){return `<div class="${S.i!==null?'':'lock'}"><h2>٤. استوديو التحليل</h2><div class="glass">
 ${S.i!==null?head():""}
-${spRow()}<canvas id="cv"></canvas><div class="fb" id="fb">اضغط «ابدأ التسجيل» وردّد ${IQ()?"الآية":"الجملة"} مع العدّ التنازلي</div>
-<div class="row"><button class="btn" onclick="listen()">▶ استمع ${IQ()?"للقارئ":"للمؤذن"}</button><button class="btn" id="rb" onclick="toggleRec()">🎙 ابدأ التسجيل</button>
+${spRow()}${rpRow()}<canvas id="cv"></canvas><div class="fb" id="fb">اضغط «ابدأ التسجيل» وردّد ${IQ()?"الآية":"الجملة"} مع العدّ التنازلي</div>
+<div class="row"><button class="btn" onclick="listen()">▶ استمع ${IQ()?"للقارئ":"للمؤذن"}</button><button class="btn" onclick="stopListen()">⏹ إيقاف الاستماع</button><button class="btn" id="rb" onclick="toggleRec()">🎙 ابدأ التسجيل</button>
 <label class="note"><input type="checkbox" ${S.rel?'checked':''} onchange="S.rel=this.checked"> ${IQ()?"أقرأ":"أغنّي"} بطبقتي أنا (قارِن الفروق النغمية فقط)</label></div>
 <div id="res"></div><p class="note">يُفضّل استخدام سماعات أذن. تُعالَج الطبقة داخل المتصفح ولا يُرسل أي صوت.</p></div></div>`}
 function quran(){
@@ -241,8 +244,20 @@ function goStudio(m,r,pg){pg=pg||"a";stopA();lastPage=pg;S.m=m;S.r=r||null;S.i=n
 function pick(k,v){stopA();S[k]=v;if(k=="m"){S.r=null;S.i=null}if(k=="r")S.i=null;render()}
 function seg(i){S.i=i;render();listen()}
 function rate(a){a.preservesPitch=a.mozPreservesPitch=a.webkitPreservesPitch=true;a.defaultPlaybackRate=a.playbackRate=S.sp}
-function listen(){stopA();const a=au=new Audio(G().a);rate(a);a.play().catch(()=>{});
-(function tick(){if(au!==a||rec)return;draw(a.currentTime);if(!a.paused&&!a.ended)requestAnimationFrame(tick);else draw()})()}
+/* الاستماع مع التكرار: كل دورة تُشغّل المقطع ثم تنتظر ثانية وتعيده، حتى يبلغ العدد المختار (أو إلى أن يُضغط «إيقاف») */
+const RP=[[1,"1×"],[3,"3×"],[5,"5×"],[0,"∞"]];
+const rpNote=t=>{const e=$("rpn");if(e)e.textContent=t};
+const rpLabel=()=>S.rp==1?"":S.rp==0?`تكرار ${rpN}`:`تكرار ${rpN} من ${S.rp}`;
+function rpRow(){return `<div class="row" role="group" aria-label="${IQ()?"تكرار الآية":"تكرار الجملة"}"><span class="note">التكرار:</span>${RP.map(([v,l])=>`<button class="btn rpb ${S.rp==v?'on':''}" data-v="${v}" aria-pressed="${S.rp==v}" onclick="setRp(${v})"><bdi dir="ltr">${l}</bdi></button>`).join("")}<span class="note" id="rpn"></span></div>`}
+function setRp(v){S.rp=v;try{localStorage.setItem("sada.rp",v)}catch(e){}
+document.querySelectorAll(".rpb").forEach(b=>{const on=+b.dataset.v==v;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on)});
+if(au&&rpN)rpNote(rpLabel())}
+function stopListen(){stopA();draw()}
+function listen(){stopA();const id=LT;let n=0;
+(function go(){const a=au=new Audio(G().a);rate(a);rpN=++n;rpNote(rpLabel());
+a.onended=()=>{if(id!==LT||au!==a)return;if(S.rp==0||n<S.rp)setTimeout(()=>{if(id===LT&&!rec)go()},RPGAP);else{rpN=0;rpNote("")}};
+a.play().catch(()=>{});
+(function tick(){if(au!==a||rec)return;draw(a.currentTime);if(!a.paused&&!a.ended)requestAnimationFrame(tick);else draw()})()})()}
 
 /* ---------- الرسم ---------- */
 function draw(ph){const c=$("cv");if(!c||S.i===null)return;const g=G(),f=g.f,w=c.clientWidth,h=c.clientHeight,r=devicePixelRatio||1;
