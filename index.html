@@ -204,9 +204,9 @@ return `<section class="hero"><h1>صدى: تعلّم الأذان والقرآن
 <div class="glass"><b>مجاني وللجميع</b><p>للمؤذن المبتدئ ومتعلّم المقامات وطالب القراءات ومحبّ القرآن، دون حساب أو تثبيت.</p></div></div>`}
 
 /* ---------- الصفحة الثانية ---------- */
-const IQ=()=>location.hash=="#/quran",R=()=>S.r=="live"?LIVE:(IQ()?QREC:REC).find(r=>r.id==S.r),G=()=>R().segs[S.i];
+const IQ=()=>location.hash=="#/quran",R=()=>S.r=="live"?LIVE:IQ()?(QMAP[S.r]||QREC.find(r=>r.id==S.r)):REC.find(r=>r.id==S.r),G=()=>R().segs[S.i];
 const lazy=()=>S.r=="live"||!!R().viaMQ;
-const qNote=()=>{const r=R(),m=r.bkOn?"تعذّر الحصول على تقسيم الآيات لهذه الرواية من MP3Quran، فهذه الآية بصوت الشيخ إبراهيم الدوسري (تسجيل احتياطي من everyayah.com).":r.approx?"تقسيم الآيات في هذه الرواية تقديري (من فواصل الصمت)، فقد تتقدّم الحدود أو تتأخر قليلاً.":"";return(m?`<p class="note" style="text-align:center">⚠ ${m}</p>`:"")+(r.txNote?`<p class="note" style="text-align:center">${r.txNote}</p>`:"")};
+const qNote=()=>{const r=R(),m=r.bkOn?"تعذّر تقسيم أو تحليل تلاوة MP3Quran لهذه السورة، فهذه الآية بصوت الشيخ إبراهيم الدوسري (تسجيل احتياطي من everyayah.com).":r.approx?"تقسيم الآيات في هذه الرواية تقديري (من فواصل الصمت)، فقد تتقدّم الحدود أو تتأخر قليلاً.":"";return(m?`<p class="note" style="text-align:center">⚠ ${m}</p>`:"")+(r.txNote?`<p class="note" style="text-align:center">${r.txNote}</p>`:"")};
 function studio(){
 const has=k=>REC.some(r=>r.mq==k);
 const mq=Object.entries(MQ).map(([k,v])=>`<button class="card ${S.m==k?'on':''} ${has(k)?'':'lock'}" onclick="pick('m','${k}')"><b>${v.n}</b><small>${has(k)?v.d:'لا يوجد تسجيل بعد'}</small></button>`).join("")+(REC.some(r=>!r.mq)?`<button class="card ${S.m=='?'?'on':''}" onclick="pick('m','?')"><b>مقام غير محدد</b><small>${REC.filter(r=>!r.mq).length} تسجيلات بانتظار تأكيد مقامها</small></button>`:"");
@@ -224,27 +224,29 @@ const lockSp=on=>document.querySelectorAll(".spd").forEach(b=>b.disabled=on);
 function setSp(v){if(rec)return;S.sp=v;try{localStorage.setItem("sada.sp",v)}catch(e){}
 document.querySelectorAll(".spd").forEach(b=>{const on=+b.dataset.v==v;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on)});
 if(au)rate(au);spNote()}
-function panel(head){return `<div class="${S.i!==null?'':'lock'}"><h2>٤. استوديو التحليل</h2><div class="glass">
+function panel(head,num){return `<div class="${S.i!==null?'':'lock'}"><h2>${num||"٤"}. استوديو التحليل</h2><div class="glass">
 ${S.i!==null?head():""}
 ${spRow()}${rpRow()}<canvas id="cv"></canvas><div class="fb" id="fb">اضغط «ابدأ التسجيل» وردّد ${IQ()?"الآية":"الجملة"} مع العدّ التنازلي</div>
 <div class="row"><button class="btn" onclick="listen()">▶ استمع ${IQ()?"للقارئ":"للمؤذن"}</button><button class="btn" onclick="stopListen()">⏹ إيقاف الاستماع</button><button class="btn" id="rb" onclick="toggleRec()">🎙 ابدأ التسجيل</button>
 <label class="note"><input type="checkbox" ${S.rel?'checked':''} onchange="S.rel=this.checked"> ${IQ()?"أقرأ":"أغنّي"} بطبقتي أنا (قارِن الفروق النغمية فقط)</label></div>
 <div id="res"></div><p class="note">يُفضّل استخدام سماعات أذن. تُعالَج الطبقة داخل المتصفح ولا يُرسل أي صوت.</p></div></div>`}
 function quran(){
-const has=k=>QREC.some(r=>r.rw==k);
-const rw=Object.entries(RW).map(([k,v])=>`<button class="card ${S.m==k?'on':''} ${has(k)?'':'lock'}" onclick="pick('m','${k}')"><b>${v.n}</b><small>${has(k)?v.im:'لا يوجد تسجيل بعد'}</small></button>`).join("");
-const rs=QREC.filter(r=>r.rw==S.m).map(r=>`<button class="card ${S.r==r.id?'on':''}" onclick="pick('r','${r.id}')"><span style="font-size:1.8rem">📖</span><b>${r.n}</b><small>${r.t}</small><span class="tag" style="align-self:flex-start;margin-top:4px">${RW[r.rw]?RW[r.rw].n:r.rw}</span></button>`).join("");
-const sg=S.r?R().segs.map((x,i)=>`<button class="seg ${S.i===i?'on':''}" onclick="seg(${i})"><i>${String(i+1).padStart(2,"0")}</i><span>${R().txt[i]}</span></button>`).join(""):"";
+if(!S.ln)S.ln=1;
+const rw=Object.entries(RW).map(([k,v])=>`<button class="card ${S.m==k?'on':''}" onclick="pick('m','${k}')"><b>${v.n}</b><small>${v.im}</small></button>`).join("");
+const e=S.m&&(QMAP[`mq-${S.ln}-${S.m}`]||(S.ln==1&&QREC.find(r=>r.rw==S.m&&!r.viaMQ)));
+const rs=!S.m?"":e?`<button class="card ${S.r==e.id?'on':''}" onclick="pick('r','${e.id}')"><span style="font-size:1.8rem">📖</span><b>${e.n}</b><small>${e.t}</small><span class="tag" style="align-self:flex-start;margin-top:4px">${RW[e.rw]?RW[e.rw].n:e.rw}</span>${e.noSeg?'<small>⚠ لا يتوفر تقسيم آيات لهذه السورة</small>':''}</button>`:S.ld?`<p class="note" role="status">جارٍ جلب تلاوة الحصري لهذه السورة…</p>`:`<p class="note">لا يتوفر تسجيل للحصري بهذه الرواية لهذه السورة.</p>`;
+const sg=S.r&&R()?R().segs.map((x,i)=>`<button class="seg ${S.i===i?'on':''}" onclick="seg(${i})"><i>${String(i+1).padStart(2,"0")}</i><span>${R().txt[i]}</span></button>`).join(""):"";
 const info=S.m&&RW[S.m]?`<div class="glass" style="margin-top:14px"><h3>${RW[S.m].n}</h3><p>${RW[S.m].d}</p><p class="note">${RW[S.m].z}</p></div>`:"";
-return `<h1 style="font-size:2.2rem">استوديو تعلّم القرآن</h1><p>سورة الفاتحة آيةً آية. استمع للقارئ ثم أعد الآية بصوتك وقارن لحنك وإيقاعك به.</p>
-<div class="glass" style="margin:18px 0"><h3>🧪 تجربة: أي سورة من القرآن الكريم</h3><p class="note">تلاوة الشيخ الحصري برواية حفص، آيةً آية، تُجلب مباشرة من واجهة Al-Quran Cloud. اختر سورة ثم اضغط تحميل، وبعدها اختر أي آية للتدرّب.</p><div class="row"><select id="lsur" style="max-width:320px" onchange="S.ln=this.value">${surOpts()}</select><button class="btn" onclick="loadLive()">تحميل السورة</button></div><p class="note" id="lmsg" role="status"></p></div>
-<h2 style="margin-top:20px">١. الرواية</h2><div class="g">${rw}</div>${info}
-<div class="${S.m?'':'lock'}"><h2>٢. القارئ</h2><div class="g">${rs}</div></div>
-<div class="${S.r?'':'lock'}"><h2>٣. آيات سورة الفاتحة</h2><div class="segs ayat">${sg}</div></div>
-${panel(()=>`<div class="ayah">${R().txt[S.i]}</div><p class="note" style="text-align:center">الآية ${S.i+1} من ${R().txt.length} — ${RW[R().rw]?RW[R().rw].n:""}</p>${qNote()}`)}
+return `<h1 style="font-size:2.2rem">استوديو تعلّم القرآن</h1><p>اختر السورة ثم الرواية ثم القارئ، واستمع للآية وأعدها بصوتك وقارن لحنك وإيقاعك به.</p>
+<h2 style="margin-top:20px">١. السورة</h2><div class="glass"><select id="lsur" style="max-width:360px" onchange="pickSur(this.value)">${surOpts()}</select><p class="note">التلاوة بصوت الشيخ الحصري من MP3Quran، ونص الآيات من Al-Quran Cloud (والفاتحة من بيانات الموقع).</p></div>
+<h2>٢. الرواية</h2><div class="g">${rw}</div>${info}
+<div class="${S.m?'':'lock'}"><h2>٣. القارئ</h2><div class="g">${rs}</div></div>
+<div class="${S.r?'':'lock'}"><h2>٤. آيات السورة</h2><div class="segs ayat">${sg}</div></div>
+${panel(()=>`<div class="ayah">${R().txt[S.i]}</div><p class="note" style="text-align:center">الآية ${S.i+1} من ${R().txt.length} — ${RW[R().rw]?RW[R().rw].n:""}</p>${qNote()}`,"٥")}
 <div class="warn"><b>تنبيه:</b> يقارن الموقع طبقة الصوت وإيقاعه فقط، ولا يُصحّح أحكام التجويد ولا مخارج الحروف. اقرأ على شيخ مُجاز لضبط الأداء.</div>`}
-function goStudio(m,r,pg){pg=pg||"a";stopA();lastPage=pg;S.m=m;S.r=r||null;S.i=null;const t=pg=="q"?"#/quran":"#/studio";if(location.hash==t)render();else location.hash=t}
-function pick(k,v){stopA();S[k]=v;if(k=="m"){S.r=null;S.i=null}if(k=="r")S.i=null;render()}
+function goStudio(m,r,pg){pg=pg||"a";stopA();lastPage=pg;if(pg=="q")S.ln=1;S.m=m;S.r=r||null;S.i=null;const t=pg=="q"?"#/quran":"#/studio";if(location.hash==t)render();else location.hash=t}
+function pick(k,v){stopA();S[k]=v;if(k=="m"){S.r=null;S.i=null;if(IQ()){const n=S.ln;S.ld=1;mqEntry(n,v).catch(()=>null).then(()=>{if(S.ln==n&&S.m==v){S.ld=0;if(IQ()&&!rec)render()}})}}if(k=="r")S.i=null;render()}
+function pickSur(v){stopA();S.ln=+v;S.m=S.r=S.i=null;S.ld=0;render()}
 async function seg(i){S.i=i;render();let L=R().segs[i];
 if(lazy()&&!L.f){fb("","جارٍ جلب الآية وتحليل لحنها…");
 try{await analyzeAny(i)}catch(e){console.warn(e);if(S.i===i)fb("lo","تعذّر جلب الصوت لتحليل اللحن: "+(e&&e.message||e)+" — يمكنك الاستماع فقط.")}
@@ -272,24 +274,30 @@ const norm=u=>String(u||"").replace(/^https?:\/\//,"").replace(/\/+$/,"").toLowe
 const jf=(u,ms=9000)=>{const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);return fetch(u,{signal:c.signal}).then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}).finally(()=>clearTimeout(t))};
 const pickMoshaf=(ms,k)=>{const c=ms.filter(m=>MF[k](m.name||""));return c.find(m=>/مرتل/.test(m.name)&&!/مجود|معلم/.test(m.name))||c.find(m=>!/مجود|معلم/.test(m.name))||c[0]};
 const fatihaTx=()=>jf("https://api.alquran.cloud/v1/surah/1/quran-uthmani").then(j=>j.data.ayahs.map(a=>a.text));
-function useBackup(R0){R0.bkOn=true;R0.approx=false;R0.n="الشيخ إبراهيم الدوسري (احتياطي)";R0.t="ورش عن نافع · Everyayah";R0.segs=R0.txt.map((_,k)=>{const u=`${EA}/001${p3(k+1)}.mp3`;return{a:u,s:null,e:null,d:null,f:null,u:[u]}})}
+function useBackup(R0){R0.bkOn=true;R0.approx=false;R0.noSeg=false;R0.n="الشيخ إبراهيم الدوسري (احتياطي)";R0.t="ورش عن نافع · Everyayah";R0.segs=R0.txt.map((_,k)=>{const u=`${EA}/${p3(R0.sn)}${p3(k+1)}.mp3`;return{a:u,s:null,e:null,d:null,f:null,u:[u]}})}
+let MQM=[],MQD=[],QMAP={},QPR={},TXC={},TX={};
+const surTx=n=>TXC[n]||(TXC[n]=jf(`https://api.alquran.cloud/v1/surah/${n}/quran-uthmani`,12000).then(j=>j.data.ayahs.map(a=>stripBsm(a.text,n,a.numberInSurah))).catch(e=>{delete TXC[n];throw e}));
+/* يبني تسجيل الحصري لسورة n برواية k: الملف من MP3Quran + توقيت الآيات، وللورش احتياطي Everyayah */
+function mqEntry(n,k){const id=`mq-${n}-${k}`;if(QPR[id])return QPR[id];
+QPR[id]=(async()=>{let txt=n==1&&TX[k],note="";
+if(!txt){try{txt=await surTx(n)}catch(e){return null}note=k=="hafs"?"":"نص الآيات المعروض برواية حفص"}
+const m=pickMoshaf(MQM.filter(x=>(","+x.surah_list+",").includes(","+n+",")),k);
+const R0={id,n:"الشيخ محمود خليل الحصري",t:RW[k].n+" · MP3Quran",rw:k,sn:n,txt,txNote:note,viaMQ:true,bk:k=="warsh",segs:txt.map(()=>({a:null,s:null,e:null,d:null,f:null}))};
+if(!m){if(!R0.bk)return null;useBackup(R0);QMAP[id]=R0;return R0}
+const url=m.server.replace(/\/?$/,"/")+p3(n)+".mp3",tm=MQD.find(x=>norm(x.folder_url)==norm(m.server));R0.url=url;R0.t=(m.name||RW[k].n)+" · MP3Quran";
+let cuts=null;
+if(tm){try{const t=await jf(`${MQB}/ayat_timing?surah=${n}&read=${tm.id}`,12000),a=(Array.isArray(t)?t:[]).filter(x=>+x.ayah>=1).sort((p,q)=>p.ayah-q.ayah);if(a.length==txt.length&&a.every(x=>x.end_time>x.start_time))cuts=a.map(x=>[x.start_time/1e3,x.end_time/1e3])}catch(e){}}
+R0.segs.forEach((g,i)=>{g.a=url;if(cuts){g.s=cuts[i][0];g.e=cuts[i][1];g.d=g.e-g.s}});
+if(!cuts){if(R0.bk)useBackup(R0);else if(n!=1)R0.noSeg=true}
+QMAP[id]=R0;return R0})();
+QPR[id].then(r=>{if(!r)delete QPR[id]},()=>delete QPR[id]);return QPR[id]}
 async function loadMQ(old){
 const[rj,tj]=await Promise.all([jf(MQB+"/reciters?language=ar",12000),jf(MQB+"/ayat_timing/reads").catch(()=>[])]);
-const ms=(rj.reciters||[]).filter(r=>/الحصر[يى]/.test(r.name)).flatMap(r=>r.moshaf||[]).filter(m=>(","+m.surah_list+",").includes(",1,")),rd=Array.isArray(tj)?tj:[];
-const TX={};old.forEach(r=>{if(r.txt&&r.txt.length&&!TX[r.rw])TX[r.rw]=r.txt});let hx;
-const out=await Promise.all(Object.keys(RW).map(async k=>{
-const m=pickMoshaf(ms,k);if(!m)return null;
-let txt=TX[k],note="";if(!txt){try{hx=hx||fatihaTx();txt=await hx;note=k=="hafs"?"":"نص الآيات المعروض برواية حفص"}catch(e){return null}}
-const url=m.server.replace(/\/?$/,"/")+"001.mp3",tm=rd.find(x=>norm(x.folder_url)==norm(m.server));
-let cuts=null;
-if(tm){try{const t=await jf(`${MQB}/ayat_timing?surah=1&read=${tm.id}`),a=(Array.isArray(t)?t:[]).filter(x=>+x.ayah>=1).sort((p,q)=>p.ayah-q.ayah);if(a.length==txt.length&&a.every(x=>x.end_time>x.start_time))cuts=a.map(x=>[x.start_time/1e3,x.end_time/1e3])}catch(e){}}
-const R0={id:"mq-"+k,n:"الشيخ محمود خليل الحصري",t:(m.name||RW[k].n)+" · MP3Quran",rw:k,txt,txNote:note,viaMQ:true,url,bk:k=="warsh",
-segs:txt.map((_,i)=>({a:url,s:cuts?cuts[i][0]:null,e:cuts?cuts[i][1]:null,d:cuts?cuts[i][1]-cuts[i][0]:null,f:null}))};
-if(!cuts&&R0.bk)useBackup(R0);
-return R0}));
-return out.filter(Boolean)}
+MQM=(rj.reciters||[]).filter(r=>/الحصر[يى]/.test(r.name)).flatMap(r=>r.moshaf||[]);MQD=Array.isArray(tj)?tj:[];
+old.forEach(r=>{if(r.txt&&r.txt.length&&!TX[r.rw])TX[r.rw]=r.txt});
+return(await Promise.all(Object.keys(RW).map(k=>mqEntry(1,k)))).filter(Boolean)}
 /* السورة كاملة تُجلب وتُفكّ مرة واحدة، ثم يُستخرج لحن كل آية منها */
-function mqBuf(R0){if(!R0.pa){R0.pa=(async()=>{const c=ctx(),r=await fetch(R0.url,{mode:"cors"});if(!r.ok)throw new Error("HTTP "+r.status);
+function mqBuf(R0){if(!R0.pa){R0.pa=(async()=>{const c=ctx(),r=await fetch(R0.url,{mode:"cors"});if(!r.ok)throw new Error("HTTP "+r.status);if((+r.headers.get("content-length")||0)>70e6)throw new Error("ملف السورة كبير جدًا لتحليل اللحن داخل المتصفح");
 const b=await c.decodeAudioData(await r.arrayBuffer()),ch=b.getChannelData(0),k=4,sr2=b.sampleRate/k,n=Math.floor(ch.length/k),x=new Float32Array(n);
 for(let j=0;j<n;j++){let t=0;for(let q=0;q<k;q++)t+=ch[j*k+q];x[j]=t/k}return{x,sr2,dur:b.duration}})();R0.pa.catch(()=>{R0.pa=null})}return R0.pa}
 function pitchFrames(x,sr2,t0,t1){const W=512,hop=Math.max(1,Math.round(H*sr2)),a=Math.round(t0*sr2),b=Math.min(x.length,Math.round(t1*sr2)),f=[];
@@ -305,10 +313,10 @@ const top=gaps.sort((p,q)=>(q[1]-q[0])-(p[1]-p[0])).slice(0,n-1).sort((p,q)=>p[0
 top.forEach(g=>{const mid=(g[0]+g[1])/2;cuts.push([t(st),t(mid)]);st=mid});cuts.push([t(st),t(b+1)]);return cuts}
 async function analyzeMQ(R0){const P=await mqBuf(R0);
 if(R0.segs.some(s=>s.e!=null&&s.e>P.dur+.5)){if(R0.bk)throw new Error("التوقيت لا يطابق الملف الصوتي");R0.segs.forEach(s=>{s.s=s.e=s.d=null})}
-if(R0.segs[0].e==null){const c=splitSilence(P.x,P.sr2,R0.segs.length);if(!c)throw new Error("تعذّر تقسيم التلاوة إلى آيات");R0.segs.forEach((s,i)=>{s.s=c[i][0];s.e=c[i][1];s.d=s.e-s.s});R0.approx=true}
+if(R0.segs[0].e==null){if(R0.sn!=1)throw new Error("لا يتوفر تقسيم آيات لهذه السورة بهذه الرواية في MP3Quran");const c=splitSilence(P.x,P.sr2,R0.segs.length);if(!c)throw new Error("تعذّر تقسيم التلاوة إلى آيات");R0.segs.forEach((s,i)=>{s.s=c[i][0];s.e=c[i][1];s.d=s.e-s.s});R0.approx=true}
 R0.segs.forEach(s=>{if(!s.f)s.f=pitchFrames(P.x,P.sr2,s.s,s.e)})}
 async function analyzeAny(i){const R0=R();if(!R0.viaMQ)return analyze(i);
-try{await analyzeMQ(R0)}catch(e){console.warn("MP3Quran:",e);if(R0.bk&&!R0.bkOn){useBackup(R0);await analyze(i)}else throw e}}
+try{if(R0.noSeg)throw new Error("لا يتوفر تقسيم آيات لهذه السورة بهذه الرواية في MP3Quran");await analyzeMQ(R0)}catch(e){console.warn("MP3Quran:",e);if(R0.bk&&!R0.bkOn){useBackup(R0);await analyze(i)}else throw e}}
 async function analyze(i){const s=R().segs[i],c=ctx();let buf,err;
 /* يجرّب المصادر بالترتيب، ويشغّل نفس الملف الذي حُلّل حتى يتطابق اللحن مع الصوت */
 for(const u of s.u){try{const r=await fetch(u,{mode:"cors"});if(!r.ok)throw new Error("HTTP "+r.status);buf=await c.decodeAudioData(await r.arrayBuffer());s.a=u;break}catch(e){err=e;console.warn("مصدر صوت فشل:",u,e)}}
