@@ -109,7 +109,7 @@ qalun:{n:"قالون عن نافع",im:"الإمام نافع المدني",d:"�
 hafs:{n:"حفص عن عاصم",im:"الإمام عاصم الكوفي",d:"رواية حفص بن سليمان عن الإمام عاصم بن أبي النَّجود الكوفي، وعليها أغلب المصاحف المطبوعة اليوم.",z:"أكثر الروايات انتشاراً في العالم الإسلامي."},
 warsh:{n:"ورش عن نافع",im:"الإمام نافع المدني",d:"الرواية الثانية عن الإمام نافع المدني، رواها ورش (عثمان بن سعيد المصري).",z:"تنتشر في المغرب والجزائر وتونس وموريتانيا وغرب إفريقيا."},
 duri:{n:"الدوري عن أبي عمرو البصري",im:"الإمام أبو عمرو البصري",d:"رواية حفص بن عمر الدوري عن الإمام أبي عمرو بن العلاء البصري.",z:"تنتشر في السودان وأجزاء من غرب إفريقيا."}};
-let REC=[],QREC=[],lastPage=null;
+let REC=[],QREC=[],lastPage=null,LIVE=null,SUR=[];
 const S={m:null,r:null,i:null,rel:true,sp:1,rp:1};
 try{const v=+localStorage.getItem("sada.sp");if([1,.75,.5].includes(v))S.sp=v}catch(e){}
 /* التكرار: 1 = مرة واحدة، 3 و5 = عدد المرات، 0 = بلا توقف حتى تضغط «إيقاف» */
@@ -204,7 +204,7 @@ return `<section class="hero"><h1>صدى: تعلّم الأذان والقرآن
 <div class="glass"><b>مجاني وللجميع</b><p>للمؤذن المبتدئ ومتعلّم المقامات وطالب القراءات ومحبّ القرآن، دون حساب أو تثبيت.</p></div></div>`}
 
 /* ---------- الصفحة الثانية ---------- */
-const IQ=()=>location.hash=="#/quran",R=()=>(IQ()?QREC:REC).find(r=>r.id==S.r),G=()=>R().segs[S.i];
+const IQ=()=>location.hash=="#/quran",R=()=>S.r=="live"?LIVE:(IQ()?QREC:REC).find(r=>r.id==S.r),G=()=>R().segs[S.i];
 function studio(){
 const has=k=>REC.some(r=>r.mq==k);
 const mq=Object.entries(MQ).map(([k,v])=>`<button class="card ${S.m==k?'on':''} ${has(k)?'':'lock'}" onclick="pick('m','${k}')"><b>${v.n}</b><small>${has(k)?v.d:'لا يوجد تسجيل بعد'}</small></button>`).join("")+(REC.some(r=>!r.mq)?`<button class="card ${S.m=='?'?'on':''}" onclick="pick('m','?')"><b>مقام غير محدد</b><small>${REC.filter(r=>!r.mq).length} تسجيلات بانتظار تأكيد مقامها</small></button>`:"");
@@ -217,7 +217,7 @@ return `<h1 style="font-size:2.2rem">استوديو التدريب</h1>
 ${panel(()=>`<h3>${String(S.i+1).padStart(2,"0")} — ${SG[S.i][0]}</h3>`)}`}
 const SPD=[[1,"1×"],[.75,"0.75×"],[.5,"0.5×"]];
 function spRow(){return `<div class="row" role="group" aria-label="${IQ()?"سرعة الاستماع والتلاوة":"سرعة الاستماع والتسجيل"}"><span class="note">السرعة:</span>${SPD.map(([v,l])=>`<button class="btn spd ${S.sp==v?'on':''}" data-v="${v}" aria-pressed="${S.sp==v}" onclick="setSp(${v})"><bdi dir="ltr">${l}</bdi></button>`).join("")}<span class="note" id="spn"></span></div>`}
-function spNote(){const e=$("spn");if(e)e.textContent=S.i!==null?`مدة ${IQ()?"الآية":"الجملة"} بهذه السرعة ≈ ${(G().d/S.sp).toFixed(1)} ث`:""}
+function spNote(){const e=$("spn");if(e)e.textContent=S.i!==null&&G().d?`مدة ${IQ()?"الآية":"الجملة"} بهذه السرعة ≈ ${(G().d/S.sp).toFixed(1)} ث`:""}
 const lockSp=on=>document.querySelectorAll(".spd").forEach(b=>b.disabled=on);
 function setSp(v){if(rec)return;S.sp=v;try{localStorage.setItem("sada.sp",v)}catch(e){}
 document.querySelectorAll(".spd").forEach(b=>{const on=+b.dataset.v==v;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on)});
@@ -235,6 +235,7 @@ const rs=QREC.filter(r=>r.rw==S.m).map(r=>`<button class="card ${S.r==r.id?'on':
 const sg=S.r?R().segs.map((x,i)=>`<button class="seg ${S.i===i?'on':''}" onclick="seg(${i})"><i>${String(i+1).padStart(2,"0")}</i><span>${R().txt[i]}</span></button>`).join(""):"";
 const info=S.m&&RW[S.m]?`<div class="glass" style="margin-top:14px"><h3>${RW[S.m].n}</h3><p>${RW[S.m].d}</p><p class="note">${RW[S.m].z}</p></div>`:"";
 return `<h1 style="font-size:2.2rem">استوديو تعلّم القرآن</h1><p>سورة الفاتحة آيةً آية. استمع للقارئ ثم أعد الآية بصوتك وقارن لحنك وإيقاعك به.</p>
+<div class="glass" style="margin:18px 0"><h3>🧪 تجربة: أي سورة من القرآن الكريم</h3><p class="note">تلاوة الشيخ الحصري برواية حفص، آيةً آية، تُجلب مباشرة من واجهة Al-Quran Cloud. اختر سورة ثم اضغط تحميل، وبعدها اختر أي آية للتدرّب.</p><div class="row"><select id="lsur" style="max-width:320px" onchange="S.ln=this.value">${surOpts()}</select><button class="btn" onclick="loadLive()">تحميل السورة</button></div><p class="note" id="lmsg" role="status"></p></div>
 <h2 style="margin-top:20px">١. الرواية</h2><div class="g">${rw}</div>${info}
 <div class="${S.m?'':'lock'}"><h2>٢. القارئ</h2><div class="g">${rs}</div></div>
 <div class="${S.r?'':'lock'}"><h2>٣. آيات سورة الفاتحة</h2><div class="segs ayat">${sg}</div></div>
@@ -242,7 +243,28 @@ ${panel(()=>`<div class="ayah">${R().txt[S.i]}</div><p class="note" style="text-
 <div class="warn"><b>تنبيه:</b> يقارن الموقع طبقة الصوت وإيقاعه فقط، ولا يُصحّح أحكام التجويد ولا مخارج الحروف. اقرأ على شيخ مُجاز لضبط الأداء.</div>`}
 function goStudio(m,r,pg){pg=pg||"a";stopA();lastPage=pg;S.m=m;S.r=r||null;S.i=null;const t=pg=="q"?"#/quran":"#/studio";if(location.hash==t)render();else location.hash=t}
 function pick(k,v){stopA();S[k]=v;if(k=="m"){S.r=null;S.i=null}if(k=="r")S.i=null;render()}
-function seg(i){S.i=i;render();listen()}
+async function seg(i){S.i=i;render();const L=R().segs[i];
+if(S.r=="live"&&!L.f){fb("","جارٍ جلب الآية وتحليل لحنها…");
+try{await analyze(i)}catch(e){if(S.i===i)fb("lo","تعذّر تحليل صوت هذه الآية داخل المتصفح (قد يمنع خادم الصوت ذلك). يمكنك الاستماع فقط.")}
+if(S.i!==i)return;if(L.f){render()}}
+listen()}
+/* ---------- وضع الـ API: أي سورة من القرآن (تلاوة الحصري برواية حفص من Al-Quran Cloud) ---------- */
+const nz=s=>s.replace(/[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g,"").replace(/ٱ/g,"ا");
+function stripBsm(t,n,k){if(n==1||n==9||k!=1)return t;const w=t.split(" ");return nz(w[0])=="بسم"&&w.length>4?w.slice(4).join(" "):t}
+function surOpts(){return (SUR.length?SUR:Array.from({length:114},(_,i)=>({number:i+1,name:"سورة "+(i+1)}))).map(s=>`<option value="${s.number}" ${S.ln==s.number?"selected":""}>${s.number}. ${s.name}</option>`).join("")}
+fetch("https://api.alquran.cloud/v1/surah").then(r=>r.json()).then(j=>{SUR=j.data||[];const e=$("lsur");if(e){const v=e.value;e.innerHTML=surOpts();e.value=v}}).catch(()=>{});
+async function loadLive(){const m=$("lmsg"),n=+$("lsur").value;m.textContent="جارٍ تحميل السورة…";
+try{const r=await fetch(`https://api.alquran.cloud/v1/surah/${n}/ar.husary`),j=await r.json();if(!r.ok||!j.data||!j.data.ayahs)throw 0;const d=j.data;stopA();
+LIVE={id:"live",n:"الشيخ الحصري (من الـ API)",t:d.name,rw:"hafs",txt:d.ayahs.map(a=>stripBsm(a.text,n,a.numberInSurah)),segs:d.ayahs.map(a=>({a:a.audio,d:null,f:null}))};
+S.ln=n;S.m=null;S.r="live";S.i=null;render();const m2=$("lmsg");if(m2)m2.textContent=`تم تحميل ${d.name}: ${d.ayahs.length} آية. اختر آية من القائمة أدناه.`}
+catch(e){m.textContent="تعذّر تحميل السورة من الـ API. تحقق من اتصالك ثم أعد المحاولة."}}
+/* يجلب صوت الآية ويستخرج خط اللحن بالمتصفح (نفس YIN، بعد خفض معدل العيّنة ×4 للسرعة) */
+async function analyze(i){const s=LIVE.segs[i],c=ctx(),buf=await c.decodeAudioData(await(await fetch(s.a)).arrayBuffer());
+const ch=buf.getChannelData(0),k=4,sr2=buf.sampleRate/k,n=Math.floor(ch.length/k),x=new Float32Array(n);
+for(let j=0;j<n;j++){let t=0;for(let q=0;q<k;q++)t+=ch[j*k+q];x[j]=t/k}
+const W=512,hop=Math.max(1,Math.round(H*sr2)),f=[];
+for(let p=0;p+W<=n;p+=hop){const hz=yin(x.subarray(p,p+W),sr2);f.push(hz>0?1200*Math.log2(hz/110):null)}
+s.d=buf.duration;s.f=f}
 function rate(a){a.preservesPitch=a.mozPreservesPitch=a.webkitPreservesPitch=true;a.defaultPlaybackRate=a.playbackRate=S.sp}
 /* الاستماع مع التكرار: كل دورة تُشغّل المقطع ثم تنتظر ثانية وتعيده، حتى يبلغ العدد المختار (أو إلى أن يُضغط «إيقاف») */
 const RP=[[1,"1×"],[3,"3×"],[5,"5×"],[0,"∞"]];
@@ -260,7 +282,7 @@ a.play().catch(()=>{});
 (function tick(){if(au!==a||rec)return;draw(a.currentTime);if(!a.paused&&!a.ended)requestAnimationFrame(tick);else draw()})()})()}
 
 /* ---------- الرسم ---------- */
-function draw(ph){const c=$("cv");if(!c||S.i===null)return;const g=G(),f=g.f,w=c.clientWidth,h=c.clientHeight,r=devicePixelRatio||1;
+function draw(ph){const c=$("cv");if(!c||S.i===null||!G().f||!G().f.some(a=>a!==null))return;const g=G(),f=g.f,w=c.clientWidth,h=c.clientHeight,r=devicePixelRatio||1;
 if(c.width!=w*r){c.width=w*r;c.height=h*r}const x=c.getContext("2d");x.setTransform(r,0,0,r,0,0);x.clearRect(0,0,w,h);
 const v=f.filter(a=>a!==null),lo=Math.min(...v)-200,hi=Math.max(...v)+200,T=g.d,X=t=>12+t/T*(w-24),Y=a=>h-14-(a-lo)/(hi-lo)*(h-28),rr=R();
 if(rr.mq){x.strokeStyle="rgba(255,255,255,.08)";x.lineWidth=1;for(const d of MQ[rr.mq].c)for(let k=-3;k<5;k++){const a=rr.ton+d+1200*k;if(a>lo&&a<hi){x.beginPath();x.moveTo(0,Y(a));x.lineTo(w,Y(a));x.stroke()}}}
@@ -272,6 +294,7 @@ x.shadowBlur=0;if(ph!=null){x.strokeStyle="rgba(255,255,255,.5)";x.lineWidth=1;x
 /* ---------- التسجيل والتقييم ---------- */
 const fb=(c,t)=>{const e=$("fb");if(e){e.className="fb "+c;e.textContent=t}};
 async function toggleRec(){if(rec){finish(true);return}
+if(!G().f||!G().d){fb("lo","لا يتوفر خط اللحن لهذه الآية بعد، فلا يمكن التسجيل عليها.");return}
 let stream;try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}})}
 catch(e){fb("lo","تعذّر الوصول إلى الميكروفون. اسمح بالوصول من إعدادات المتصفح ثم أعد المحاولة (قد يُحجب داخل المعاينة المضمّنة).");return}
 stopA();const c=ctx();await c.resume();const an=c.createAnalyser();an.fftSize=2048;const src=c.createMediaStreamSource(stream),g=G(),T=g.d,sp=S.sp;src.connect(an);
