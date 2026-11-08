@@ -74,6 +74,34 @@ label{display:block;font-weight:500;margin:14px 0 6px}
 input,select,textarea{width:100%;font:inherit;color:var(--tx);background:#0B0E26;border:1px solid var(--bd);border-radius:12px;padding:11px 14px}textarea{min-height:140px;resize:vertical}
 footer{margin-top:64px;padding:28px 0 8px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;gap:12px 24px;flex-wrap:wrap;align-items:center;color:var(--mu)}
 footer b{color:var(--go)}footer a{color:var(--mu);text-decoration:none;margin-inline-end:16px}footer a:hover{color:var(--tx)}footer .fb2{font-family:"Aref Ruqaa",serif;font-size:1.3rem;color:var(--tx)}
+
+/* شريط التقدّم */
+.pgw{margin:10px 0 14px}.pgl{display:flex;justify-content:space-between;gap:10px;font-weight:600;margin-bottom:6px;color:var(--tx)}.pgl b{color:var(--go);direction:ltr}
+.pgb{height:16px;border-radius:999px;background:#0B0E26;border:1px solid var(--bd);overflow:hidden}.pgb i{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,var(--cy),var(--go));transition:width .3s ease}
+.pgb.ind i{width:35%;animation:ind 1.1s ease-in-out infinite alternate}@keyframes ind{from{margin-inline-start:0}to{margin-inline-start:65%}}
+/* استوديو التسجيل المبسّط */
+.how{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 14px}.how span{background:var(--sf2);border:1px solid var(--bd);border-radius:999px;padding:6px 14px;font-weight:600}
+.act{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:center;margin:16px 0}
+.btn.big{font-size:1.1rem;padding:14px 22px;border-radius:16px}
+.rec{font:inherit;color:#fff;background:linear-gradient(160deg,#F0876A,#E5484D);border:0;border-radius:999px;min-width:170px;padding:14px 26px;font-size:1.2rem;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;box-shadow:0 8px 24px rgba(229,72,77,.35)}
+.rec .mic{font-size:2.2rem;line-height:1}.rec:hover{filter:brightness(1.08)}.rec:focus-visible{outline:2px solid var(--go);outline-offset:3px}
+.rec.on{background:linear-gradient(160deg,#38BDF8,#2563EB);animation:pls 1.1s ease-in-out infinite}
+@keyframes pls{0%,100%{box-shadow:0 0 0 0 rgba(56,189,248,.55)}50%{box-shadow:0 0 0 16px rgba(56,189,248,0)}}
+.fb{font-size:1.5rem;padding:18px}.fb.cd{font-size:3.4rem;line-height:1.2;background:rgba(245,158,11,.12);border-color:var(--go)}
+.gauge{display:flex;align-items:center;gap:10px;direction:ltr;margin:10px 0;font-size:.9rem;color:var(--mu)}
+.gauge .gt{position:relative;flex:1;height:18px;border-radius:999px;background:linear-gradient(90deg,#F87171,#FBBF24 30%,#4ADE80 50%,#FBBF24 70%,#38BDF8)}
+.gauge .gt b{position:absolute;top:-5px;left:50%;width:28px;height:28px;margin-left:-14px;border-radius:50%;background:#fff;border:3px solid var(--bg);transition:left .12s linear;display:grid;place-items:center;font-size:.9rem}
+.opt{margin:10px 0;border:1px dashed var(--bd);border-radius:12px;padding:6px 14px}.opt summary{cursor:pointer;font-weight:600;color:var(--mu);padding:6px 0}
+#res{position:relative}
+.rs{text-align:center;padding:10px 0 4px}.rs .msg{font-size:1.5rem;font-weight:700;margin:8px 0}
+.stars{display:flex;gap:6px;justify-content:center;direction:ltr;font-size:2.8rem;line-height:1}.stars span{color:#3A4170;transform:scale(.6);opacity:.6}
+.stars span.on{color:#FBBF24;text-shadow:0 0 14px rgba(251,191,36,.6);animation:pop .5s ease-out both}
+@keyframes pop{0%{transform:scale(0)}70%{transform:scale(1.3)}100%{transform:scale(1);opacity:1}}
+.ring{--p:0;width:112px;height:112px;border-radius:50%;margin:12px auto;display:grid;place-items:center;background:conic-gradient(var(--go) calc(var(--p)*1%),#0B0E26 0)}
+.ring b{width:86px;height:86px;border-radius:50%;background:var(--sf);display:grid;place-items:center;font-size:1.6rem;color:var(--go);direction:ltr}
+.cf{position:absolute;inset:0;overflow:hidden;pointer-events:none}.cf i{position:absolute;top:-30px;font-style:normal;font-size:1.6rem;animation:fall 2.4s ease-in forwards}
+@keyframes fall{to{transform:translateY(340px) rotate(360deg);opacity:0}}
+@media(prefers-reduced-motion:reduce){.rec.on,.pgb.ind i,.stars span.on{animation:none}}
 </style>
 </head>
 <body>
@@ -224,17 +252,23 @@ const lockSp=on=>document.querySelectorAll(".spd").forEach(b=>b.disabled=on);
 function setSp(v){if(rec)return;S.sp=v;try{localStorage.setItem("sada.sp",v)}catch(e){}
 document.querySelectorAll(".spd").forEach(b=>{const on=+b.dataset.v==v;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on)});
 if(au)rate(au);spNote()}
+const rbHTML=on=>`<span class="mic">${on?"⏹":"🎤"}</span><span>${on?"إيقاف":"ابدأ التسجيل"}</span>`;
+const setRb=on=>{const b=$("rb");if(b){b.className="rec"+(on?" on":"");b.innerHTML=rbHTML(on)}};
 function panel(head,num){return `<div class="${S.i!==null?'':'lock'}"><h2>${num||"٤"}. استوديو التحليل</h2><div class="glass">
 ${S.i!==null?head():""}
-${spRow()}${rpRow()}<canvas id="cv"></canvas><div class="fb" id="fb">اضغط «ابدأ التسجيل» وردّد ${IQ()?"الآية":"الجملة"} مع العدّ التنازلي</div>
-<div class="row"><button class="btn" onclick="listen()">▶ استمع ${IQ()?"للقارئ":"للمؤذن"}</button><button class="btn" onclick="stopListen()">⏹ إيقاف الاستماع</button><button class="btn" id="rb" onclick="toggleRec()">🎙 ابدأ التسجيل</button>
-<label class="note"><input type="checkbox" ${S.rel?'checked':''} onchange="S.rel=this.checked"> ${IQ()?"أقرأ":"أغنّي"} بطبقتي أنا (قارِن الفروق النغمية فقط)</label></div>
+<div class="how"><span>١ 👂 استمع</span><span>٢ 🎤 سجّل صوتك</span><span>٣ ⭐ شاهد نجومك</span></div>
+<div class="pgw" id="pgw" hidden role="status" aria-live="polite"><div class="pgl"><span id="pgt"></span><b id="pgp"></b></div><div class="pgb"><i id="pgi"></i></div></div>
+<canvas id="cv"></canvas>
+<div class="gauge" id="gz" hidden aria-hidden="true"><span>⬆️ ارفع</span><div class="gt"><b id="gm">🎤</b></div><span>⬇️ اخفض</span></div>
+<div class="fb" id="fb">اضغط الميكروفون الكبير 🎤 وردّد ${IQ()?"الآية":"الجملة"} بعد العدّ التنازلي</div>
+<div class="act"><button class="btn big" onclick="listen()">👂 استمع ${IQ()?"للقارئ":"للمؤذن"}</button><button class="rec" id="rb" onclick="toggleRec()">${rbHTML(false)}</button><button class="btn big" onclick="stopListen()">⏹ إيقاف الاستماع</button></div>
+<details class="opt"><summary>⚙️ خيارات: السرعة والتكرار</summary>${spRow()}${rpRow()}<label class="note"><input type="checkbox" ${S.rel?'checked':''} onchange="S.rel=this.checked"> ${IQ()?"أقرأ":"أغنّي"} بطبقتي أنا (قارِن الفروق النغمية فقط)</label></details>
 <div id="res"></div><p class="note">يُفضّل استخدام سماعات أذن. تُعالَج الطبقة داخل المتصفح ولا يُرسل أي صوت.</p></div></div>`}
 function quran(){
 if(!S.ln)S.ln=1;
 const rw=Object.entries(RW).map(([k,v])=>`<button class="card ${S.m==k?'on':''}" onclick="pick('m','${k}')"><b>${v.n}</b><small>${v.im}</small></button>`).join("");
 const e=S.m&&(QMAP[`mq-${S.ln}-${S.m}`]||(S.ln==1&&QREC.find(r=>r.rw==S.m&&!r.viaMQ)));
-const rs=!S.m?"":e?`<button class="card ${S.r==e.id?'on':''}" onclick="pick('r','${e.id}')"><span style="font-size:1.8rem">📖</span><b>${e.n}</b><small>${e.t}</small><span class="tag" style="align-self:flex-start;margin-top:4px">${RW[e.rw]?RW[e.rw].n:e.rw}</span>${e.noSeg?'<small>⚠ لا يتوفر تقسيم آيات لهذه السورة</small>':''}</button>`:S.ld?`<p class="note" role="status">جارٍ جلب تلاوة الحصري لهذه السورة…</p>`:`<p class="note">لا يتوفر تسجيل للحصري بهذه الرواية لهذه السورة.</p>`;
+const rs=!S.m?"":e?`<button class="card ${S.r==e.id?'on':''}" onclick="pick('r','${e.id}')"><span style="font-size:1.8rem">📖</span><b>${e.n}</b><small>${e.t}</small><span class="tag" style="align-self:flex-start;margin-top:4px">${RW[e.rw]?RW[e.rw].n:e.rw}</span>${e.noSeg?'<small>⚠ لا يتوفر تقسيم آيات لهذه السورة</small>':''}</button>`:S.ld?`<div class="pgw" role="status" style="grid-column:1/-1"><div class="pgl"><span>📥 جارٍ جلب تلاوة الحصري لهذه السورة…</span></div><div class="pgb ind"><i></i></div></div>`:`<p class="note">لا يتوفر تسجيل للحصري بهذه الرواية لهذه السورة.</p>`;
 const sg=S.r&&R()?R().segs.map((x,i)=>`<button class="seg ${S.i===i?'on':''}" onclick="seg(${i})"><i>${String(i+1).padStart(2,"0")}</i><span>${R().txt[i]}</span></button>`).join(""):"";
 const info=S.m&&RW[S.m]?`<div class="glass" style="margin-top:14px"><h3>${RW[S.m].n}</h3><p>${RW[S.m].d}</p><p class="note">${RW[S.m].z}</p></div>`:"";
 return `<h1 style="font-size:2.2rem">استوديو تعلّم القرآن</h1><p>اختر السورة ثم الرواية ثم القارئ، واستمع للآية وأعدها بصوتك وقارن لحنك وإيقاعك به.</p>
@@ -248,9 +282,9 @@ function goStudio(m,r,pg){pg=pg||"a";stopA();lastPage=pg;if(pg=="q")S.ln=1;S.m=m
 function pick(k,v){stopA();S[k]=v;if(k=="m"){S.r=null;S.i=null;if(IQ()){const n=S.ln;S.ld=1;mqEntry(n,v).catch(()=>null).then(()=>{if(S.ln==n&&S.m==v){S.ld=0;if(IQ()&&!rec)render()}})}}if(k=="r")S.i=null;render()}
 function pickSur(v){stopA();S.ln=+v;S.m=S.r=S.i=null;S.ld=0;render()}
 async function seg(i){S.i=i;render();let L=R().segs[i];
-if(lazy()&&!L.f){fb("","جارٍ جلب الآية وتحليل لحنها…");
+if(lazy()&&!L.f){fb("","⏳ نجهّز الآية لك…");prog(3,"⏳ نبدأ التحضير…");
 try{await analyzeAny(i)}catch(e){console.warn(e);if(S.i===i)fb("lo","تعذّر جلب الصوت لتحليل اللحن: "+(e&&e.message||e)+" — يمكنك الاستماع فقط.")}
-if(S.i!==i)return;L=R().segs[i];if(L.f){render()}
+prog(null);if(S.i!==i)return;L=R().segs[i];if(L.f){render()}
 if(R().viaMQ&&L.e==null)return}
 listen()}
 /* ---------- وضع الـ API: أي سورة من القرآن (تلاوة الحصري برواية حفص من Al-Quran Cloud) ---------- */
@@ -296,10 +330,20 @@ const[rj,tj]=await Promise.all([jf(MQB+"/reciters?language=ar",12000),jf(MQB+"/a
 MQM=(rj.reciters||[]).filter(r=>/الحصر[يى]/.test(r.name)).flatMap(r=>r.moshaf||[]);MQD=Array.isArray(tj)?tj:[];
 old.forEach(r=>{if(r.txt&&r.txt.length&&!TX[r.rw])TX[r.rw]=r.txt});
 return(await Promise.all(Object.keys(RW).map(k=>mqEntry(1,k)))).filter(Boolean)}
+/* ---------- شريط التقدّم ---------- */
+let PG=null;
+function progUI(){const w=$("pgw");if(!w)return;if(!PG){w.hidden=true;return}w.hidden=false;const p=Math.max(0,Math.min(100,Math.round(PG.p)));$("pgi").style.width=p+"%";$("pgp").textContent=p+"%";$("pgt").textContent=PG.t||""}
+function prog(p,t){PG=p==null?null:{p,t};progUI()}
+async function fetchAB(u,onp){const r=await fetch(u,{mode:"cors"});if(!r.ok)throw new Error("HTTP "+r.status);const len=+r.headers.get("content-length")||0;
+if(len>70e6)throw new Error("ملف السورة كبير جدًا لتحليل اللحن داخل المتصفح");
+if(!r.body||!r.body.getReader||!len){const b=await r.arrayBuffer();onp&&onp(1);return b}
+const rd=r.body.getReader(),ch=[];let got=0;for(;;){const{done,value}=await rd.read();if(done)break;ch.push(value);got+=value.length;onp&&onp(Math.min(1,got/len))}
+const out=new Uint8Array(got);let o=0;for(const c of ch){out.set(c,o);o+=c.length}return out.buffer}
+const tick0=()=>new Promise(r=>setTimeout(r,0));
 /* السورة كاملة تُجلب وتُفكّ مرة واحدة، ثم يُستخرج لحن كل آية منها */
-function mqBuf(R0){if(!R0.pa){R0.pa=(async()=>{const c=ctx(),r=await fetch(R0.url,{mode:"cors"});if(!r.ok)throw new Error("HTTP "+r.status);if((+r.headers.get("content-length")||0)>70e6)throw new Error("ملف السورة كبير جدًا لتحليل اللحن داخل المتصفح");
-const b=await c.decodeAudioData(await r.arrayBuffer()),ch=b.getChannelData(0),k=4,sr2=b.sampleRate/k,n=Math.floor(ch.length/k),x=new Float32Array(n);
-for(let j=0;j<n;j++){let t=0;for(let q=0;q<k;q++)t+=ch[j*k+q];x[j]=t/k}return{x,sr2,dur:b.duration}})();R0.pa.catch(()=>{R0.pa=null})}return R0.pa}
+function mqBuf(R0){if(!R0.pa){R0.pa=(async()=>{const c=ctx(),ab=await fetchAB(R0.url,f=>prog(5+f*65,"📥 جارٍ تحميل التلاوة…"));prog(72,"🎧 جارٍ فكّ الصوت…");await tick0();
+const b=await c.decodeAudioData(ab),ch=b.getChannelData(0),k=4,sr2=b.sampleRate/k,n=Math.floor(ch.length/k),x=new Float32Array(n);
+for(let j=0;j<n;j++){let t=0;for(let q=0;q<k;q++)t+=ch[j*k+q];x[j]=t/k}prog(85,"🎼 جارٍ قراءة اللحن…");await tick0();return{x,sr2,dur:b.duration}})();R0.pa.catch(()=>{R0.pa=null})}return R0.pa}
 function pitchFrames(x,sr2,t0,t1){const W=512,hop=Math.max(1,Math.round(H*sr2)),a=Math.round(t0*sr2),b=Math.min(x.length,Math.round(t1*sr2)),f=[];
 for(let p=a;p+W<=b;p+=hop){const hz=yin(x.subarray(p,p+W),sr2);f.push(hz>0?1200*Math.log2(hz/110):null)}return f}
 /* تقسيم تقديري عند غياب التوقيت: أطول (n-1) فواصل صمت داخل التلاوة */
@@ -314,12 +358,12 @@ top.forEach(g=>{const mid=(g[0]+g[1])/2;cuts.push([t(st),t(mid)]);st=mid});cuts.
 async function analyzeMQ(R0){const P=await mqBuf(R0);
 if(R0.segs.some(s=>s.e!=null&&s.e>P.dur+.5)){if(R0.bk)throw new Error("التوقيت لا يطابق الملف الصوتي");R0.segs.forEach(s=>{s.s=s.e=s.d=null})}
 if(R0.segs[0].e==null){if(R0.sn!=1)throw new Error("لا يتوفر تقسيم آيات لهذه السورة بهذه الرواية في MP3Quran");const c=splitSilence(P.x,P.sr2,R0.segs.length);if(!c)throw new Error("تعذّر تقسيم التلاوة إلى آيات");R0.segs.forEach((s,i)=>{s.s=c[i][0];s.e=c[i][1];s.d=s.e-s.s});R0.approx=true}
-R0.segs.forEach(s=>{if(!s.f)s.f=pitchFrames(P.x,P.sr2,s.s,s.e)})}
+for(let i=0;i<R0.segs.length;i++){const g=R0.segs[i];if(!g.f)g.f=pitchFrames(P.x,P.sr2,g.s,g.e);if(i%3==2||i==R0.segs.length-1){prog(85+15*(i+1)/R0.segs.length,"🎼 جارٍ قراءة اللحن…");await tick0()}}}
 async function analyzeAny(i){const R0=R();if(!R0.viaMQ)return analyze(i);
 try{if(R0.noSeg)throw new Error("لا يتوفر تقسيم آيات لهذه السورة بهذه الرواية في MP3Quran");await analyzeMQ(R0)}catch(e){console.warn("MP3Quran:",e);if(R0.bk&&!R0.bkOn){useBackup(R0);await analyze(i)}else throw e}}
 async function analyze(i){const s=R().segs[i],c=ctx();let buf,err;
 /* يجرّب المصادر بالترتيب، ويشغّل نفس الملف الذي حُلّل حتى يتطابق اللحن مع الصوت */
-for(const u of s.u){try{const r=await fetch(u,{mode:"cors"});if(!r.ok)throw new Error("HTTP "+r.status);buf=await c.decodeAudioData(await r.arrayBuffer());s.a=u;break}catch(e){err=e;console.warn("مصدر صوت فشل:",u,e)}}
+for(const u of s.u){try{const ab=await fetchAB(u,f=>prog(5+f*70,"📥 جارٍ تحميل الآية…"));prog(80,"🎼 جارٍ قراءة اللحن…");await tick0();buf=await c.decodeAudioData(ab);s.a=u;break}catch(e){err=e;console.warn("مصدر صوت فشل:",u,e)}}
 if(!buf)throw new Error("لم يسمح أي مصدر بقراءة الصوت داخل المتصفح ("+(err&&err.message||err)+")");
 const ch=buf.getChannelData(0),k=4,sr2=buf.sampleRate/k,n=Math.floor(ch.length/k),x=new Float32Array(n);
 for(let j=0;j<n;j++){let t=0;for(let q=0;q<k;q++)t+=ch[j*k+q];x[j]=t/k}
@@ -361,23 +405,26 @@ if(!G().f||!G().d){fb("lo","لا يتوفر خط اللحن لهذه الآية 
 let stream;try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}})}
 catch(e){fb("lo","تعذّر الوصول إلى الميكروفون. اسمح بالوصول من إعدادات المتصفح ثم أعد المحاولة (قد يُحجب داخل المعاينة المضمّنة).");return}
 stopA();const c=ctx();await c.resume();const an=c.createAnalyser();an.fftSize=2048;const src=c.createMediaStreamSource(stream),g=G(),T=g.d,sp=S.sp;src.connect(an);
-pts=[];$("res").innerHTML="";$("rb").textContent="⏹ إيقاف";lockSp(true);rec=Object.assign(newQ(),{stream,src,run:false});
-for(let k=3;k>0;k--){fb("",String(k));await new Promise(r=>setTimeout(r,650));if(!rec)return}
-fb("",IQ()?"اقرأ الآن…":"غنِّ الآن…");rec.run=true;rec.t0=performance.now();const buf=new Float32Array(2048);
+pts=[];$("res").innerHTML="";setRb(1);lockSp(true);rec=Object.assign(newQ(),{stream,src,run:false});
+for(let k=3;k>0;k--){fb("cd",String(k));await new Promise(r=>setTimeout(r,650));if(!rec)return}
+fb("ok",IQ()?"🎤 اقرأ الآن!":"🎤 غنِّ الآن!");const gz=$("gz");if(gz)gz.hidden=false;rec.run=true;rec.t0=performance.now();const buf=new Float32Array(2048);
 try{const Q0=rec,mr=new MediaRecorder(stream),ch=[],nm=`sada-${IQ()?"quran":"adhan"}-${S.i+1}`;mr.ondataavailable=e=>{if(e.data.size)ch.push(e.data)};mr.onstop=()=>{if(ch.length)showDl(new Blob(ch,{type:mr.mimeType||"audio/webm"}),nm)};mr.start();Q0.mr=mr}catch(e){}
 /* الزمن الفعلي × السرعة = زمن المحتوى: عند 0.5× تمتد الآية إلى ضعف مدتها، فيُقارَن صوتك بالموضع الصحيح من اللحن */
 (function loop(){if(!rec)return;const tc=(performance.now()-rec.t0)/1000*sp;if(tc>T+.4){finish(false);return}
 an.getFloatTimeDomainData(buf);const o=stepRec(rec,g.f,tc,yin(buf,c.sampleRate),S.rel);
 if(o){pts.push({t:tc,y:o.y});
-if(rec.sm<-35)fb("lo","🔴 زود شوية / ارفع الطبقة");else if(rec.sm>35)fb("hi","🔵 وطي شوية / انزل بالطبقة");else fb("ok","🟢 ممتاز، ركوز سليم!")}
+if(rec.sm<-35)fb("lo","⬆️ ارفع صوتك قليلاً");else if(rec.sm>35)fb("hi","⬇️ اخفض صوتك قليلاً");else fb("ok","🌟 أحسنت! استمر هكذا");const gm=$("gm");if(gm)gm.style.left=(50+Math.max(-1,Math.min(1,rec.sm/100))*46)+"%"}
 draw(tc);requestAnimationFrame(loop)})()}
 let dlUrl;
 function showDl(b,nm){const a=$("dl");if(!a)return;if(dlUrl)URL.revokeObjectURL(dlUrl);dlUrl=URL.createObjectURL(b);const t=b.type||"";a.href=dlUrl;a.download=nm+"."+(/mp4/.test(t)?"m4a":/ogg/.test(t)?"ogg":"webm");a.hidden=false}
 function finish(manual){const Q=rec;if(!Q)return;rec=null;try{if(Q.mr&&Q.mr.state!=="inactive")Q.mr.stop()}catch(e){}Q.stream.getTracks().forEach(t=>t.stop());Q.src.disconnect();lockSp(false);
-$("rb").textContent="🎙 ابدأ التسجيل";draw();if(manual&&!Q.run){fb("","");return}
-const sc=scoreOf(Q);
-fb("",sc>=85?"ما شاء الله! ركوز ممتاز":sc>=60?"جيد، ثبّت النغمة أكثر":"استمع للمؤذن وأعد المحاولة");
-$("res").innerHTML=`<div class="row"><div class="score">${sc}%</div><span>${IQ()?"مطابقة لحن القارئ":"مطابقة المقام"}</span></div><div class="row"><a class="btn" id="dl" hidden>⬇ تحميل تسجيلي</a><button class="btn" onclick="render();listen()">↻ إعادة المحاولة</button>${S.i<R().segs.length-1?`<button class="btn" onclick="seg(${S.i+1})">${IQ()?"الآية":"الشريحة"} التالية ←</button>`:""}</div>`}
+setRb(0);const gz=$("gz");if(gz)gz.hidden=true;draw();if(manual&&!Q.run){fb("","");return}
+const sc=scoreOf(Q),st=sc>=90?5:sc>=75?4:sc>=60?3:sc>=40?2:1,
+msg=sc>=90?"🎉 ما شاء الله! أنت نجم":sc>=75?"👏 أحسنت! قريب جداً من القارئ":sc>=60?"😊 جميل! جرّب مرة أخرى لتنال نجوماً أكثر":"💪 لا بأس، استمع مرة أخرى وأعد المحاولة، أنت تتحسّن!";
+fb("","");
+$("res").innerHTML=`<div class="rs"><div class="stars" role="img" aria-label="${st} من 5 نجوم">${[1,2,3,4,5].map(n=>`<span class="${n<=st?'on':''}" style="animation-delay:${n*.12}s">★</span>`).join("")}</div><div class="msg">${msg}</div><div class="ring" style="--p:${sc}"><b>${sc}%</b></div><p class="note">${IQ()?"مطابقة لحن القارئ":"مطابقة المقام"}</p></div><div class="act"><button class="btn big" onclick="render();listen()">🔁 جرّب مرة أخرى</button>${S.i<R().segs.length-1?`<button class="btn big" onclick="seg(${S.i+1})">${IQ()?"الآية":"الشريحة"} التالية ➡️</button>`:""}<a class="btn big" id="dl" hidden>⬇ تحميل تسجيلي</a></div>`;
+if(sc>=75)confetti()}
+function confetti(){if(matchMedia("(prefers-reduced-motion:reduce)").matches)return;const h=$("res");if(!h)return;const b=document.createElement("div");b.className="cf";b.setAttribute("aria-hidden","true");b.innerHTML=Array.from({length:22},(_,i)=>`<i style="left:${Math.random()*100}%;animation-delay:${(Math.random()*.6).toFixed(2)}s">${["⭐","✨","🌟","🎉"][i%4]}</i>`).join("");h.prepend(b);setTimeout(()=>b.remove(),3200)}
 
 /* ---------- من نحن / تواصل معنا ---------- */
 const CONTACT={email:"salemaymen814@gmail.com",links:[]}; /* ضع بريدك في email وروابط حساباتك في links مثل ["يوتيوب","https://..."] */
@@ -412,7 +459,7 @@ function render(){if(rec)finish(true);stopA();pts=[];const h=location.hash,pg=h=
 if(pg!=lastPage){if(lastPage!==null)S.m=S.r=S.i=null;lastPage=pg}
 ["h","a","q","ab","ct"].forEach((k,n)=>$("n"+(n+1)).className=k==pg?"on":"");
 $("app").innerHTML=pg=="a"?studio():pg=="q"?quran():pg=="ab"?about():pg=="ct"?contact():home();spNote();
-if(pg=="a"||pg=="q")requestAnimationFrame(()=>draw());seo(pg)}
+progUI();if(pg=="a"||pg=="q")requestAnimationFrame(()=>draw());seo(pg)}
 addEventListener("hashchange",()=>{window.scrollTo(0,0);render()});addEventListener("resize",()=>!rec&&draw());Promise.all([fetch("data/recordings.json",{cache:"no-store"}).then(r=>r.json()),fetch("data/quran.json",{cache:"no-store"}).then(r=>r.json()).catch(()=>[])]).then(async([a,q])=>{REC=a;QREC=q;try{const m=await loadMQ(q);if(m.length)QREC=m}catch(e){console.warn("MP3Quran غير متاح، استُخدمت بيانات quran.json:",e)}render()}).catch(e=>{$("app").innerHTML='<p class="glass">تعذّر تحميل data/recordings.json — شغّل المشروع من داخل مجلد fajr-project عبر: python3 -m http.server 8000</p>'});
 </script>
 </body>
