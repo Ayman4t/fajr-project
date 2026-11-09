@@ -45,7 +45,7 @@ RECORDINGS = [
      {"bridge": 0.1, "off": 6, "split": [240]}),
     ("hesham", "hesham elsqaf.mp3", "هاشم السقاف", "أذان الفجر", "bayati", {"off": -3}),
     ("nasr", "nasr elqtamy.mp3", "ناصر القطامي", "أذان الفجر", "hijaz",
-     {"bridge": 0.6, "merge": [[13, 14, 15]], "drop": [11], "expect": 13}),
+     {"bridge": 0.6, "drop": [11, 13], "expect": 14}),
 ]
 REF_HZ = 110.0  # cents are measured relative to A2 = 110 Hz
 
