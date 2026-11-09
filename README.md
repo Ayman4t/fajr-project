@@ -24,15 +24,15 @@ The site name is in `index.html` (title tag and the `<nav>` line).
 | Saba (الصبا) | مشاري راشد العفاسي | asaba |
 | Rast (الرست) | الشيخ عبد الباسط عبد الصمد | a40 |
 | Hijaz (الحجاز) | أذان الحرم المكي | a20 |
+| Hijaz (الحجاز) | ناصر القطامي | nasr |
 | Nahawand (النهاوند) | *name to be added* | nahawand |
 | Sikah (السيكا) | عدنان الحلاق | adnan |
 | Sikah (السيكا) | *name to be added* | sikah |
 | Ajam (العجم) | *name to be added* | ajam |
-| Kurd (الكرد) | ناصر القطامي | nasr |
 | Kurd (الكرد) | *name to be added* | kurd |
 
 The original added maqams were classified from pitch analysis of the recordings (held-note scale degrees and where the call closes).
-The new recordings are tagged as Sikah (Adnan), Bayati (Hashim), and Kurd (Nasser), based on pitch analysis and recording catalogs.
+The new recordings are tagged as Sikah (Adnan), Bayati (Hashim), and Hijaz (Nasser), based on pitch analysis and recording catalogs.
 Ajam and Kurd share the same notes and differ only in which note is the tonic, so Ajam is the one to double-check by ear.
 
 ## Filling in a reciter name
@@ -44,6 +44,10 @@ Edit `NAME_TBD` / the name field in `segment.py` (RECORDINGS) and in `data/recor
 Needs ffmpeg + `pip install numpy scipy`. `librosa` and `soundfile` are optional; without them the cutter uses its built-in YIN pitch tracker and WAV reader:
 
     python3 segment.py /path/to/mp3s data
+
+To re-cut just one recording while keeping the others as they are:
+
+    python3 segment.py /path/to/mp3s data nasr
 
 Recordings whose source mp3 is not in that folder are kept as they are in data/recordings.json, so you can add new ones
 without the old sources. Expected source names for the added recordings are listed in `segment.py` (including `adnan el halaq.mp3`, `hesham elsqaf.mp3`, and `nasr elqtamy.mp3`).

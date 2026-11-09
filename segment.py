@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Cut Fajr adhan recordings into 14 phrase segments and extract pitch contours.
 
-Usage:  python segment.py <input_dir> <output_dir>
+Usage:  python segment.py <input_dir> <output_dir> [recording_id ...]
 Needs:  ffmpeg, numpy, scipy (librosa and soundfile are optional accelerators)
 Output: <output_dir>/<id>/01.mp3 ... 14.mp3  and  <output_dir>/recordings.json
 Method: loudness-based phrase detection (no speech recognition). Each recording
@@ -42,8 +42,7 @@ RECORDINGS = [
     ("adnan", "adnan el halaq.mp3", "عدنان الحلاق", "أذان الفجر", "sikah",
      {"bridge": 0.1, "off": 6, "split": [240]}),
     ("hesham", "hesham elsqaf.mp3", "هاشم السقاف", "أذان الفجر", "bayati", {"off": -3}),
-    ("nasr", "nasr elqtamy.mp3", "ناصر القطامي", "أذان الفجر", "kurd",
-     {"bridge": 0.25, "off": 30, "split": [9.0, 22.3]}),
+    ("nasr", "nasr elqtamy.mp3", "ناصر القطامي", "أذان الفجر", "hijaz", {"bridge": 1.3}),
 ]
 REF_HZ = 110.0  # cents are measured relative to A2 = 110 Hz
 
@@ -183,13 +182,22 @@ def adjust_blocks(blocks, split=(), merge=()):
     return [b for k, b in enumerate(blocks) if k not in drop]
 
 
-def main(src_dir, out_dir):
+def main(src_dir, out_dir, only_ids=None):
     os.makedirs(out_dir, exist_ok=True)
     jpath = os.path.join(out_dir, "recordings.json")
     old = {r["id"]: r for r in json.load(open(jpath, encoding="utf-8"))} if os.path.exists(jpath) else {}
+    if only_ids is not None:
+        only_ids = set(only_ids)
+        unknown = only_ids - {r[0] for r in RECORDINGS}
+        if unknown:
+            sys.exit("Unknown recording id(s): " + ", ".join(sorted(unknown)))
     result = []
     for rec in RECORDINGS:
         rid, fname, name, note, maqam = rec[:5]
+        if only_ids is not None and rid not in only_ids:
+            if rid in old:
+                result.append(old[rid])
+            continue
         opts = rec[5] if len(rec) > 5 else {}
         src = os.path.join(src_dir, fname)
         if not os.path.exists(src):
@@ -224,4 +232,7 @@ def main(src_dir, out_dir):
 
 
 if __name__ == "__main__":
-    main(*(sys.argv[1:3] if len(sys.argv) >= 3 else ("uploads", "data")))
+    if len(sys.argv) >= 3:
+        main(sys.argv[1], sys.argv[2], sys.argv[3:] or None)
+    else:
+        main("uploads", "data")
