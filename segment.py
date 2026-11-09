@@ -5,14 +5,15 @@ Usage:  python segment.py <input_dir> <output_dir> [recording_id ...]
 Needs:  ffmpeg, numpy, scipy (librosa and soundfile are optional accelerators)
 Output: <output_dir>/<id>/01.mp3 ... 14.mp3  and  <output_dir>/recordings.json
 Method: loudness-based phrase detection (no speech recognition). Each recording
-        must contain 14 phrases separated by pauses; the script stops otherwise.
+        is cut into 14 phrases unless a recording explicitly drops a duplicate block.
 Notes:  * Recordings whose source file is not in <input_dir> are kept as they already are in
           <output_dir>/recordings.json, so you can add new recordings without the old sources.
         * A recording may carry tuning options (last tuple item): "bridge" (seconds of pause that
           still count as one phrase), "off" (dB added to the loudness threshold), "split" (times in
           seconds where one detected block is really two phrases) and "merge" (groups of block
-          numbers, counted after splitting, that are really one phrase) and "ton" (tonic in cents,
-          overriding the automatic estimate when the call does not close on the tonic).
+          numbers, counted after splitting, that are really one phrase), "drop" (0-based block
+          numbers to omit after splitting/merging), and "ton" (tonic in cents, overriding the
+          automatic estimate when the call does not close on the tonic).
 """
 import json, os, subprocess, sys, tempfile, wave
 import numpy as np
@@ -42,7 +43,8 @@ RECORDINGS = [
     ("adnan", "adnan el halaq.mp3", "عدنان الحلاق", "أذان الفجر", "sikah",
      {"bridge": 0.1, "off": 6, "split": [240]}),
     ("hesham", "hesham elsqaf.mp3", "هاشم السقاف", "أذان الفجر", "bayati", {"off": -3}),
-    ("nasr", "nasr elqtamy.mp3", "ناصر القطامي", "أذان الفجر", "hijaz", {"bridge": 1.3}),
+    ("nasr", "nasr elqtamy.mp3", "ناصر القطامي", "أذان الفجر", "hijaz",
+     {"bridge": 1.3, "drop": [12]}),  # omit the second الصلاة خير من النوم refrain
 ]
 REF_HZ = 110.0  # cents are measured relative to A2 = 110 Hz
 
@@ -160,7 +162,9 @@ def tonic_cents(segs):
     These phrases close on the tonic; using all of them, not just the last, stops a singer's
     upward pitch drift over the call (up to ~70 cents in a18) from skewing the estimate."""
     ends = []
-    for k in (3, 5, 7, 9, 13):
+    for k in sorted(set((3, 5, 7, 9, len(segs) - 1))):
+        if k < 0 or k >= len(segs):
+            continue
         v = [x for x in segs[k]["f"] if x is not None][-60:-12]
         if v:
             ends.append(np.median(v))
@@ -214,18 +218,27 @@ def main(src_dir, out_dir, only_ids=None):
         db = 20 * np.log10(np.array([np.sqrt(np.mean(y[i:i + h] ** 2)) for i in range(0, len(y) - h, h)]) + 1e-5)
         blocks = phrase_blocks(db, bridge=opts.get("bridge", 0.6), off=opts.get("off", 0.0))
         blocks = adjust_blocks(blocks, opts.get("split", ()), opts.get("merge", ()))
-        if len(blocks) != 14:
-            sys.exit(f"{fname}: found {len(blocks)} phrases, expected 14")
+        drop = set(opts.get("drop", ()))
+        if any(k < 0 or k >= len(blocks) for k in drop):
+            sys.exit(f"{fname}: drop index outside detected phrase blocks")
+        blocks = [b for k, b in enumerate(blocks) if k not in drop]
+        expected = 14 - len(drop)
+        if len(blocks) != expected:
+            sys.exit(f"{fname}: found {len(blocks)} phrases, expected {expected}")
         os.makedirs(os.path.join(out_dir, rid), exist_ok=True)
         segs, total = [], len(y) / sr
         for k, (a, b) in enumerate(blocks):
             s = max(a - 0.15, (blocks[k - 1][1] + a) / 2 if k else 0)          # 0.15 s pre-roll
-            e = min(b + 0.45, (blocks[k + 1][0] + b) / 2 if k < 13 else total)  # 0.45 s tail
+            e = min(b + 0.45, (blocks[k + 1][0] + b) / 2 if k < len(blocks) - 1 else total)  # 0.45 s tail
             rel = f"{rid}/{k + 1:02d}.mp3"
             subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{s:.2f}", "-to", f"{e:.2f}", "-i", src,
                             "-ac", "1", "-ar", "22050", "-b:a", "40k", os.path.join(out_dir, rel)], check=True)
             segs.append({"a": "data/" + rel, "d": round(e - s, 2), "start": round(s, 2), "end": round(e, 2),
                          "f": pitch_contour(y[int(s * sr):int(e * sr)].astype(np.float32), sr)})
+        for stale in range(len(segs) + 1, 15):
+            path = os.path.join(out_dir, rid, f"{stale:02d}.mp3")
+            if os.path.exists(path):
+                os.remove(path)
         result.append({"id": rid, "n": name, "t": note, "mq": maqam, "ton": opts.get("ton", tonic_cents(segs)), "segs": segs})
         print(rid, [x["d"] for x in segs])
     json.dump(result, open(jpath, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))

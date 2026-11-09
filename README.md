@@ -2,7 +2,7 @@
 
 Two features in one site:
 
-* **Adhan** (`#/studio`): eight maqams and 14 phrases per recording.
+* **Adhan** (`#/studio`): eight maqams, with 14 phrases per recording by default.
 * **Quran** (`#/quran`): Surat Al-Fatiha in four riwayat (Qalun 'an Nafi', Hafs 'an 'Asim, Warsh 'an Nafi', Al-Duri 'an Abi 'Amr al-Basri), 7 ayat per recording.
 
 Quran recordings (all by Al-Husary, from mp3quran.net): `qalun`, `hafs`, `warsh`, `duri`, each cut into 7 ayat
@@ -33,6 +33,7 @@ The site name is in `index.html` (title tag and the `<nav>` line).
 
 The original added maqams were classified from pitch analysis of the recordings (held-note scale degrees and where the call closes).
 The new recordings are tagged as Sikah (Adnan), Bayati (Hashim), and Hijaz (Nasser), based on pitch analysis and recording catalogs.
+Nasser's Fajr recording has 13 clips because its second "الصلاة خير من النوم" refrain is omitted.
 Ajam and Kurd share the same notes and differ only in which note is the tonic, so Ajam is the one to double-check by ear.
 
 ## Filling in a reciter name
