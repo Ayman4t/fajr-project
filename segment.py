@@ -2,7 +2,7 @@
 """Cut Fajr adhan recordings into 14 phrase segments and extract pitch contours.
 
 Usage:  python segment.py <input_dir> <output_dir>
-Needs:  ffmpeg, numpy, scipy, librosa, soundfile
+Needs:  ffmpeg, numpy, scipy (librosa and soundfile are optional accelerators)
 Output: <output_dir>/<id>/01.mp3 ... 14.mp3  and  <output_dir>/recordings.json
 Method: loudness-based phrase detection (no speech recognition). Each recording
         must contain 14 phrases separated by pauses; the script stops otherwise.
@@ -14,8 +14,16 @@ Notes:  * Recordings whose source file is not in <input_dir> are kept as they al
           numbers, counted after splitting, that are really one phrase) and "ton" (tonic in cents,
           overriding the automatic estimate when the call does not close on the tonic).
 """
-import json, os, subprocess, sys, tempfile
-import numpy as np, soundfile as sf, librosa
+import json, os, subprocess, sys, tempfile, wave
+import numpy as np
+try:
+    import soundfile as sf
+except ImportError:
+    sf = None
+try:
+    import librosa
+except ImportError:
+    librosa = None
 from scipy.signal import medfilt
 
 NAME_TBD = "مؤذن (الاسم لم يُضَف بعد)"
@@ -31,6 +39,11 @@ RECORDINGS = [
     ("sikah", "sikah.mp3", NAME_TBD, "أذان الفجر", "sikah", {"ton": 0}),      # held-note centre; auto estimate drifted to 1149
     ("ajam", "ajam.mp3", NAME_TBD, "أذان الفجر", "ajam", {"ton": 993}),     # same notes as Kurd; tonic = long closing hold (auto estimate picked the 3rd)
     ("kurd", "kurd.mp3", NAME_TBD, "أذان الفجر", "kurd", {"bridge": 0.4, "off": 3}),
+    ("adnan", "adnan el halaq.mp3", "عدنان الحلاق", "أذان الفجر", "sikah",
+     {"bridge": 0.1, "off": 6, "split": [240]}),
+    ("hesham", "hesham elsqaf.mp3", "هاشم السقاف", "أذان الفجر", "bayati", {"off": -3}),
+    ("nasr", "nasr elqtamy.mp3", "ناصر القطامي", "أذان الفجر", "kurd",
+     {"bridge": 0.25, "off": 30, "split": [9.0, 22.3]}),
 ]
 REF_HZ = 110.0  # cents are measured relative to A2 = 110 Hz
 
@@ -66,7 +79,10 @@ def phrase_blocks(db, step=0.05, bridge=0.6, off=0.0, minlen=3):
 
 def pitch_contour(y, sr):
     """F0 in cents (re 110 Hz), 40 ms hop, None where unvoiced, octave jumps removed."""
-    f0, _, _ = librosa.pyin(y, fmin=65, fmax=700, sr=sr, frame_length=1024, hop_length=320)
+    if librosa is not None:
+        f0, _, _ = librosa.pyin(y, fmin=65, fmax=700, sr=sr, frame_length=1024, hop_length=320)
+    else:
+        f0 = yin_f0(y, sr, frame_length=1024, hop_length=320, fmin=65, fmax=700)
     c = 1200 * np.log2(f0 / REF_HZ)
     ok = ~np.isnan(c)
     if ok.sum() > 5:
@@ -78,6 +94,66 @@ def pitch_contour(y, sr):
                 while c[i] - prev < -600: c[i] += 1200
             prev = c[i]
     return [None if np.isnan(x) else int(round(x)) for x in c[::2]]
+
+
+def yin_f0(y, sr, frame_length=1024, hop_length=320, fmin=65, fmax=700):
+    """YIN pitch fallback for installs without librosa; returns Hz or NaN per frame."""
+    y = np.asarray(y, dtype=np.float32)
+    if not len(y):
+        return np.array([], dtype=float)
+    half = frame_length // 2
+    y = np.pad(y, (half, half), mode="reflect") if len(y) > 1 else np.pad(y, (half, half))
+    count = 1 + (len(y) - frame_length) // hop_length
+    min_lag = max(2, int(sr / fmax))
+    max_lag = min(frame_length - 2, int(sr / fmin))
+    lags = np.arange(1, max_lag + 1)
+    window = np.hanning(frame_length).astype(np.float32)
+    nfft = 1 << (2 * frame_length - 1).bit_length()
+    result = np.full(count, np.nan, dtype=float)
+    for i in range(count):
+        frame = y[i * hop_length:i * hop_length + frame_length]
+        if np.sqrt(np.mean(frame * frame)) < 0.008:
+            continue
+        frame = (frame - np.mean(frame)) * window
+        spec = np.fft.rfft(frame, nfft)
+        acf = np.fft.irfft(spec * np.conjugate(spec), nfft)[:max_lag + 1]
+        energy = np.concatenate(([0.0], np.cumsum(frame * frame)))
+        left = energy[frame_length - lags]
+        right = energy[-1] - energy[lags]
+        diff = np.maximum(0, left + right - 2 * acf[lags])
+        cmnd = diff * lags / np.maximum(np.cumsum(diff), 1e-12)
+        valid = cmnd[min_lag - 1:]
+        if not len(valid):
+            continue
+        below = np.flatnonzero(valid < 0.15)
+        idx = min_lag - 1 + (int(below[0]) if len(below) else int(np.argmin(valid)))
+        while idx + 1 < len(cmnd) and cmnd[idx + 1] < cmnd[idx]:
+            idx += 1
+        if cmnd[idx] > 0.4:
+            continue
+        lag = float(idx + 1)
+        if 0 < idx < len(cmnd) - 1:
+            a, b, c = cmnd[idx - 1:idx + 2]
+            denom = a - 2 * b + c
+            if abs(denom) > 1e-12:
+                lag += 0.5 * (a - c) / denom
+        result[i] = sr / lag
+    return result
+
+
+def read_wav(path):
+    """Read the mono PCM WAV produced by ffmpeg, with soundfile as an optional fast path."""
+    if sf is not None:
+        return sf.read(path)
+    with wave.open(path, "rb") as wav:
+        sr, channels, width = wav.getframerate(), wav.getnchannels(), wav.getsampwidth()
+        raw = wav.readframes(wav.getnframes())
+    if width != 2:
+        raise ValueError(f"Expected 16-bit PCM WAV from ffmpeg, got {width * 8}-bit")
+    y = np.frombuffer(raw, dtype="<i2").astype(np.float32) / 32768.0
+    if channels > 1:
+        y = y.reshape(-1, channels).mean(axis=1)
+    return y, sr
 
 
 def tonic_cents(segs):
@@ -125,7 +201,7 @@ def main(src_dir, out_dir):
             sys.exit(f"{fname}: not found in {src_dir}")
         wav = os.path.join(tempfile.gettempdir(), rid + ".wav")
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", src, "-ac", "1", "-ar", "16000", wav], check=True)
-        y, sr = sf.read(wav)
+        y, sr = read_wav(wav)
         h = int(0.05 * sr)
         db = 20 * np.log10(np.array([np.sqrt(np.mean(y[i:i + h] ** 2)) for i in range(0, len(y) - h, h)]) + 1e-5)
         blocks = phrase_blocks(db, bridge=opts.get("bridge", 0.6), off=opts.get("off", 0.0))

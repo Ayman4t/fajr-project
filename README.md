@@ -2,7 +2,7 @@
 
 Two features in one site:
 
-* **Adhan** (`#/studio`): eight maqams, one recording each, 14 phrases per adhan.
+* **Adhan** (`#/studio`): eight maqams and 14 phrases per recording.
 * **Quran** (`#/quran`): Surat Al-Fatiha in four riwayat (Qalun 'an Nafi', Hafs 'an 'Asim, Warsh 'an Nafi', Al-Duri 'an Abi 'Amr al-Basri), 7 ayat per recording.
 
 Quran recordings (all by Al-Husary, from mp3quran.net): `qalun`, `hafs`, `warsh`, `duri`, each cut into 7 ayat
@@ -20,15 +20,19 @@ The site name is in `index.html` (title tag and the `<nav>` line).
 | Maqam | Reciter | id |
 |---|---|---|
 | Bayati (البياتي) | أذان الحرم المدني | a18 |
+| Bayati (البياتي) | هاشم السقاف | hesham |
 | Saba (الصبا) | مشاري راشد العفاسي | asaba |
 | Rast (الرست) | الشيخ عبد الباسط عبد الصمد | a40 |
 | Hijaz (الحجاز) | أذان الحرم المكي | a20 |
 | Nahawand (النهاوند) | *name to be added* | nahawand |
+| Sikah (السيكا) | عدنان الحلاق | adnan |
 | Sikah (السيكا) | *name to be added* | sikah |
 | Ajam (العجم) | *name to be added* | ajam |
+| Kurd (الكرد) | ناصر القطامي | nasr |
 | Kurd (الكرد) | *name to be added* | kurd |
 
-The last four were classified from pitch analysis of the recordings (held-note scale degrees and where the call closes).
+The original added maqams were classified from pitch analysis of the recordings (held-note scale degrees and where the call closes).
+The new recordings are tagged as Sikah (Adnan), Bayati (Hashim), and Kurd (Nasser), based on pitch analysis and recording catalogs.
 Ajam and Kurd share the same notes and differ only in which note is the tonic, so Ajam is the one to double-check by ear.
 
 ## Filling in a reciter name
@@ -37,12 +41,12 @@ Edit `NAME_TBD` / the name field in `segment.py` (RECORDINGS) and in `data/recor
 
 ## Re-cutting
 
-Needs ffmpeg + `pip install numpy scipy librosa soundfile`:
+Needs ffmpeg + `pip install numpy scipy`. `librosa` and `soundfile` are optional; without them the cutter uses its built-in YIN pitch tracker and WAV reader:
 
     python3 segment.py /path/to/mp3s data
 
 Recordings whose source mp3 is not in that folder are kept as they are in data/recordings.json, so you can add new ones
-without the old sources. Expected source names for the new four: nahawand.mp3, sikah.mp3, ajam.mp3, kurd.mp3.
+without the old sources. Expected source names for the added recordings are listed in `segment.py` (including `adnan el halaq.mp3`, `hesham elsqaf.mp3`, and `nasr elqtamy.mp3`).
 Per-recording tuning options (pause bridging, manual split/merge of phrases, tonic override) are documented at the top of segment.py.
 
 ## Adding or replacing Quran recordings
