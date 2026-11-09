@@ -5,15 +5,16 @@ Usage:  python segment.py <input_dir> <output_dir> [recording_id ...]
 Needs:  ffmpeg, numpy, scipy (librosa and soundfile are optional accelerators)
 Output: <output_dir>/<id>/01.mp3 ... 14.mp3  and  <output_dir>/recordings.json
 Method: loudness-based phrase detection (no speech recognition). Each recording
-        is cut into 14 phrases unless a recording explicitly drops a duplicate block.
+        is cut into 14 phrases unless a recording explicitly changes the expected count.
 Notes:  * Recordings whose source file is not in <input_dir> are kept as they already are in
           <output_dir>/recordings.json, so you can add new recordings without the old sources.
         * A recording may carry tuning options (last tuple item): "bridge" (seconds of pause that
           still count as one phrase), "off" (dB added to the loudness threshold), "split" (times in
           seconds where one detected block is really two phrases) and "merge" (groups of block
           numbers, counted after splitting, that are really one phrase), "drop" (0-based block
-          numbers to omit after splitting/merging), and "ton" (tonic in cents, overriding the
-          automatic estimate when the call does not close on the tonic).
+          numbers to omit after splitting/merging), "expect" (resulting phrase count),
+          and "ton" (tonic in cents, overriding the automatic estimate when the call does not
+          close on the tonic).
 """
 import json, os, subprocess, sys, tempfile, wave
 import numpy as np
@@ -44,7 +45,7 @@ RECORDINGS = [
      {"bridge": 0.1, "off": 6, "split": [240]}),
     ("hesham", "hesham elsqaf.mp3", "هاشم السقاف", "أذان الفجر", "bayati", {"off": -3}),
     ("nasr", "nasr elqtamy.mp3", "ناصر القطامي", "أذان الفجر", "hijaz",
-     {"bridge": 1.3, "drop": [12]}),  # omit the second الصلاة خير من النوم refrain
+     {"bridge": 0.6, "merge": [[13, 14, 15]], "drop": [11], "expect": 13}),
 ]
 REF_HZ = 110.0  # cents are measured relative to A2 = 110 Hz
 
@@ -222,7 +223,7 @@ def main(src_dir, out_dir, only_ids=None):
         if any(k < 0 or k >= len(blocks) for k in drop):
             sys.exit(f"{fname}: drop index outside detected phrase blocks")
         blocks = [b for k, b in enumerate(blocks) if k not in drop]
-        expected = 14 - len(drop)
+        expected = opts.get("expect", 14)
         if len(blocks) != expected:
             sys.exit(f"{fname}: found {len(blocks)} phrases, expected {expected}")
         os.makedirs(os.path.join(out_dir, rid), exist_ok=True)

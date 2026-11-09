@@ -33,7 +33,7 @@ The site name is in `index.html` (title tag and the `<nav>` line).
 
 The original added maqams were classified from pitch analysis of the recordings (held-note scale degrees and where the call closes).
 The new recordings are tagged as Sikah (Adnan), Bayati (Hashim), and Hijaz (Nasser), based on pitch analysis and recording catalogs.
-Nasser's Fajr recording has 13 clips because its second "الصلاة خير من النوم" refrain is omitted.
+Nasser's Fajr recording has 13 clips: one of the two "الصلاة خير من النوم" refrains is omitted, and the final clip groups "الله أكبر الله أكبر" with "لا إله إلا الله".
 Ajam and Kurd share the same notes and differ only in which note is the tonic, so Ajam is the one to double-check by ear.
 
 ## Filling in a reciter name
